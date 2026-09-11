@@ -3,9 +3,9 @@
 A static, single-page customer survey (plain HTML/CSS/JS — no build step) that:
 
 1. Asks about the respondent's organization and role
-2. Lets them pick which modular units interest them (13 products)
+2. Lets them pick which modular units interest them (17 products, each with a hero photo; tap to open a lightbox gallery)
 3. Has them rank the picks in priority order
-4. For each pick: choose a tier (Economy / Standard / Luxury), rate the price on a 5-point scale, and say what they'd realistically pay
+4. For each pick: see the photos, a one-line description and what moves the price between tiers, then choose a tier (Economy / Standard / Luxury), rate the price on a 5-point scale, and say what they'd realistically pay. An expandable note explains what the prices include and exclude.
 5. Asks what sizes/configurations interest them (20 ft, 40 ft, 2-story, joined, custom), what models are missing, unmet needs, timeline and budget
 6. Shows a review page, then submits to **Google Sheets** via a Google Apps Script web app
 
@@ -17,7 +17,8 @@ Answers are saved to `localStorage` as a draft so a refresh doesn't lose progres
 | --- | --- |
 | `index.html` | Survey markup (6 steps + thank-you) |
 | `styles.css` | Styling, responsive |
-| `config.js` | **Edit this**: Sheets endpoint URL, product list and prices, tier descriptions |
+| `config.js` | **Edit this**: Sheets endpoint URL, product list (prices, descriptions, price drivers, photo captions), tier descriptions, pricing notes |
+| `images/`, `images/thumb/` | Product photos, `<product-id>-<n>.jpg`. `-1` is the hero. Resized from the originals in *Marland continental products* (full ~1400px, thumbs ~520px) |
 | `survey.js` | Survey logic: rendering, validation, ranking, submit |
 | `apps-script/Code.gs` | Google Apps Script that receives submissions and writes to the sheet |
 
@@ -63,9 +64,11 @@ The site will be live at `https://<your-user>.github.io/facility-survey/` within
 
 Useful pivots: average price rating and average "would pay" by product × tier; count of times each product was ranked #1; org type vs tier preference.
 
-## Editing products or prices
+## Editing products, prices or photos
 
-Everything is in `config.js` — `PRODUCTS` (name, size, three prices, optional `note` tag such as "2-story"), `TIERS` (labels/descriptions), and `PRICE_SCALE`. The survey, review page and payload all read from there, so no other file needs to change.
+Everything is in `config.js` — `PRODUCTS` (name, size, three prices, `desc`, `drivers`, optional `note` tag such as "2-story", and an `images` array of captions), `TIERS`, `PRICING_NOTES` and `PRICE_SCALE`. Prices, descriptions and drivers were taken from `Marland_Continental_Product_Pricing.xlsx` (Price Worksheet / Cost Model tabs, priced September 2026). The survey, review page and payload all read from `config.js`, so no other file needs to change.
+
+To add or change a photo: drop `images/<id>-<n>.jpg` and `images/thumb/<id>-<n>.jpg` (n = 1 is the hero shown on the card; keep heroes as exterior shots at roughly 3:2) and add a caption at the matching position in that product's `images` array. Every product shows one hero plus at most three thumbnails on the pricing step; extra photos are reachable through the lightbox ("+N").
 
 ## Testing locally
 

@@ -13,6 +13,11 @@
   const fmt = (n) => "$" + Number(n).toLocaleString("en-US");
   const productById = (id) => PRODUCTS.find((p) => p.id === id);
   const productLabel = (p) => `${p.name} (${p.size})`;
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  // Photos live at images/<id>-<n>.jpg (full) and images/thumb/<id>-<n>.jpg; config lists a caption per photo.
+  const photos = (p) => (p.images || []).map((caption, i) => ({ src: `images/${p.id}-${i + 1}.jpg`, thumb: `images/thumb/${p.id}-${i + 1}.jpg`, caption }));
+  const heroSrc = (p) => `images/thumb/${p.id}-1.jpg`;
+  const MAX_STRIP = 3; // thumbnails shown per product before "+N" — keeps every unit visually equal
 
   // ── State ──────────────────────────────────────────────────────────────────
   const state = {
@@ -63,18 +68,28 @@
   function renderProducts() {
     const grid = $("#product-grid");
     grid.innerHTML = PRODUCTS.map((p) => `
-      <label class="product-card">
-        <input type="checkbox" name="products" value="${p.id}" ${state.selected.includes(p.id) ? "checked" : ""}>
-        <span class="pname">${p.name}</span>
-        <span class="psize">${p.size}</span>${p.note ? `<span class="ptag">${p.note}</span>` : ""}
-        <span class="pprice">from <strong>${fmt(p.prices.economy)}</strong></span>
-      </label>`).join("");
+      <div class="product-card ${state.selected.includes(p.id) ? "selected" : ""}" data-id="${p.id}">
+        <button type="button" class="pphoto" data-lightbox="${p.id}" data-index="0" aria-label="View photo of ${esc(p.name)}">
+          <img src="${heroSrc(p)}" alt="${esc(p.name)}, ${esc(p.size)}" loading="lazy" width="520" height="340">
+          <span class="zoom" aria-hidden="true">&#x2922;</span>
+        </button>
+        <label class="pbody">
+          <input type="checkbox" name="products" value="${p.id}" ${state.selected.includes(p.id) ? "checked" : ""}>
+          <span class="ptext">
+            <span class="pname">${esc(p.name)}</span>
+            <span class="pmeta"><span class="psize">${esc(p.size)}</span>${p.note ? `<span class="ptag">${esc(p.note)}</span>` : ""}</span>
+            <span class="pdesc">${esc(p.desc || "")}</span>
+            <span class="pprice">from <strong>${fmt(p.prices.economy)}</strong></span>
+          </span>
+        </label>
+      </div>`).join("");
 
     grid.addEventListener("change", (e) => {
       if (e.target.name !== "products") return;
       const id = e.target.value;
       if (e.target.checked) { if (!state.selected.includes(id)) state.selected.push(id); }
       else { state.selected = state.selected.filter((x) => x !== id); delete state.ratings[id]; }
+      e.target.closest(".product-card").classList.toggle("selected", e.target.checked);
       $("#err-products").hidden = state.selected.length > 0;
       saveDraft();
     });
@@ -88,7 +103,8 @@
       return `
         <li class="rank-item" data-id="${id}">
           <span class="rank-num">${i + 1}</span>
-          <span class="rank-name">${p.name}<small>${p.size}${p.note ? " · " + p.note : ""}</small></span>
+          <img class="rank-thumb" src="${heroSrc(p)}" alt="" loading="lazy">
+          <span class="rank-name">${esc(p.name)}<small>${esc(p.size)}${p.note ? " · " + esc(p.note) : ""}</small></span>
           <span class="rank-controls">
             <button type="button" data-move="-1" aria-label="Move ${p.name} up" ${i === 0 ? "disabled" : ""}>▲</button>
             <button type="button" data-move="1" aria-label="Move ${p.name} down" ${i === state.selected.length - 1 ? "disabled" : ""}>▼</button>
@@ -120,8 +136,20 @@
       const r = state.ratings[id] || {};
       return `
         <div class="price-block" data-id="${id}">
-          <h3><span class="badge">#${i + 1}</span>${p.name} <span class="opt">· ${p.size}${p.note ? " · " + p.note : ""}</span></h3>
-          <p class="sub">Which tier would you most likely choose for this unit?</p>
+          <div class="pb-head">
+            <div class="pb-gallery">
+              <button type="button" class="pb-hero" data-lightbox="${id}" data-index="0" aria-label="View photos of ${esc(p.name)}">
+                <img src="${heroSrc(p)}" alt="${esc(p.name)}" loading="lazy">
+              </button>
+              ${galleryStrip(p)}
+            </div>
+            <div class="pb-text">
+              <h3><span class="badge">#${i + 1}</span>${esc(p.name)} <span class="opt">· ${esc(p.size)}${p.note ? " · " + esc(p.note) : ""}</span></h3>
+              <p class="pb-desc">${esc(p.desc || "")}</p>
+              ${p.drivers ? `<p class="pb-drivers"><strong>What moves the price between tiers:</strong> ${esc(p.drivers)}</p>` : ""}
+            </div>
+          </div>
+          <p class="sub q">Which tier would you most likely choose for this unit?</p>
 
           <div class="tier-options" role="radiogroup" aria-label="Tier for ${p.name}">
             ${TIERS.map((t) => `
@@ -153,6 +181,59 @@
     // Show the price-vs-list comparison hint as they type.
     state.selected.forEach((id) => updatePayHint(id));
   }
+
+  function galleryStrip(p) {
+    const list = photos(p).slice(1); // hero already shown
+    if (!list.length) return "";
+    const shown = list.slice(0, MAX_STRIP);
+    const extra = list.length - shown.length;
+    return `<div class="pb-strip">${shown.map((ph, k) => `
+      <button type="button" data-lightbox="${p.id}" data-index="${k + 1}" aria-label="${esc(ph.caption)}">
+        <img src="${ph.thumb}" alt="${esc(ph.caption)}" loading="lazy">
+        ${extra && k === shown.length - 1 ? `<span class="more">+${extra}</span>` : ""}
+        <span class="cap">${esc(ph.caption)}</span>
+      </button>`).join("")}</div>`;
+  }
+
+  // ── Lightbox ───────────────────────────────────────────────────────────────
+  const lb = { el: $("#lightbox"), img: $("#lb-img"), cap: $("#lb-cap"), list: [], i: 0, opener: null, p: null };
+  function openLightbox(pid, index) {
+    const p = productById(pid); if (!p) return;
+    lb.p = p; lb.list = photos(p); lb.i = Math.min(index, lb.list.length - 1); lb.opener = document.activeElement;
+    showLightbox(); lb.el.hidden = false; document.body.classList.add("lb-open"); $("#lb-close").focus();
+  }
+  function showLightbox() {
+    const ph = lb.list[lb.i]; const p = lb.p;
+    lb.img.src = ph.src; lb.img.alt = `${p.name} — ${ph.caption}`;
+    lb.cap.textContent = `${p.name} (${p.size}) — ${ph.caption}${lb.list.length > 1 ? ` · ${lb.i + 1} of ${lb.list.length}` : ""}`;
+    $("#lb-prev").hidden = $("#lb-next").hidden = lb.list.length < 2;
+  }
+  function closeLightbox() { lb.el.hidden = true; document.body.classList.remove("lb-open"); lb.img.removeAttribute("src"); if (lb.opener) lb.opener.focus(); }
+  function stepLightbox(d) { lb.i = (lb.i + d + lb.list.length) % lb.list.length; showLightbox(); }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-lightbox]");
+    if (b) { e.preventDefault(); openLightbox(b.dataset.lightbox, Number(b.dataset.index || 0)); }
+  });
+  $("#lb-close").addEventListener("click", closeLightbox);
+  $("#lb-prev").addEventListener("click", () => stepLightbox(-1));
+  $("#lb-next").addEventListener("click", () => stepLightbox(1));
+  lb.el.addEventListener("click", (e) => { if (e.target === lb.el) closeLightbox(); });
+  document.addEventListener("keydown", (e) => {
+    if (lb.el.hidden) return;
+    if (e.key === "Escape") closeLightbox();
+    else if (e.key === "ArrowLeft") stepLightbox(-1);
+    else if (e.key === "ArrowRight") stepLightbox(1);
+  });
+
+  // ── Pricing notes (what's included / excluded) ─────────────────────────────
+  (function renderPricingNotes() {
+    const n = window.PRICING_NOTES; const body = $("#pricing-notes-body");
+    if (!n || !body) { const d = $("#pricing-notes"); if (d) d.hidden = true; return; }
+    body.innerHTML = `
+      <p><strong>Included:</strong> ${esc(n.includes)}</p>
+      <p><strong>Not included:</strong> ${esc(n.excludes)}</p>
+      <p>${esc(n.packages)} ${esc(n.dated)}</p>`;
+  })();
 
   function updatePayHint(id) {
     const block = $(`.price-block[data-id="${id}"]`);
@@ -191,7 +272,6 @@
   });
 
   // ── Step 6: review ─────────────────────────────────────────────────────────
-  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
   function val(name) { const el = form.elements[name]; return el ? (el.value || "") : ""; }
   function checked(name) { return $$(`input[name="${name}"]:checked`, form).map((el) => el.value); }
 
