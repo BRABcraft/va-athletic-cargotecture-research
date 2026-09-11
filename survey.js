@@ -23,7 +23,7 @@
   const state = {
     step: 1,
     selected: [],   // product ids, in ranked order
-    ratings: {},    // id -> { tier, priceRating, wouldPay }
+    ratings: {},    // id -> { tier, priceRating, wouldPay, priceNotes, changes: [labels], otherChange }
   };
 
   const form = $("#survey");
@@ -54,7 +54,7 @@
       state.step = Math.min(Math.max(d.step || 1, 1), TOTAL_STEPS);
       const f = d.fields || {};
       $$("input[name], select[name], textarea[name]", form).forEach((el) => {
-        if (el.closest("#product-grid, #pricing-list")) return; // rendered separately
+        if (el.closest("#product-grid, #pricing-list, #changes-list")) return; // rendered separately
         if (el.type === "radio") el.checked = f[el.name] === el.value;
         else if (el.type === "checkbox") el.checked = Array.isArray(f[el.name]) && f[el.name].includes(el.value);
         else if (f[el.name] !== undefined) el.value = f[el.name];
@@ -175,6 +175,9 @@
           </div>
           <p class="money-hint"></p>
           <p class="error err-pay" hidden>Please enter an amount (whole dollars).</p>
+
+          <p class="q"><label for="notes-${id}" style="display:inline;margin:0">Why did you rate the price this way? <span class="opt">(optional)</span></label></p>
+          <textarea id="notes-${id}" name="notes-${id}" rows="2" class="price-notes" placeholder="e.g. compared to a site-built option, what you'd expect the tier to include, budget constraints…">${esc(r.priceNotes || "")}</textarea>
         </div>`;
     }).join("");
 
@@ -265,11 +268,75 @@
     } else if (e.target.name === `pay-${id}`) {
       r.wouldPay = e.target.value === "" ? null : Math.max(0, Math.round(Number(e.target.value)));
       $(".err-pay", block).hidden = true;
+    } else if (e.target.name === `notes-${id}`) {
+      r.priceNotes = e.target.value;
     }
     block.classList.remove("invalid");
     updatePayHint(id);
     saveDraft();
   });
+
+  // ── Step 5: suggested changes per product ──────────────────────────────────
+  // Which variant options make sense for a given unit. A 20 ft unit is only
+  // offered a 40 ft version (and vice versa); stacking is skipped for units that
+  // are already 2-story, already have a stacked sibling, or can't sensibly stack.
+  function variantOptions(p) {
+    const opts = [];
+    if (p.size === "40 ft") opts.push({ id: "size20", label: "A 20 ft version" });
+    if (p.size === "20 ft") opts.push({ id: "size40", label: "A 40 ft version" });
+    const stackedSibling = PRODUCTS.find((q) => q !== p && q.name.startsWith(p.name) && q.note === "2-story");
+    if (p.note !== "2-story" && !p.noStacked && !stackedSibling) opts.push({ id: "stacked", label: "A 2-story / stacked version" });
+    if (stackedSibling && state.selected.indexOf(stackedSibling.id) === -1) opts.push({ id: "stacked-existing", label: `Interested in the stacked version (${fmt(stackedSibling.prices.economy)}+)` });
+    if (p.note === "2-story") {
+      const single = PRODUCTS.find((q) => q !== p && p.name.startsWith(q.name) && q.note !== "2-story");
+      if (!single) opts.push({ id: "single", label: "A single-level version" });
+      else if (state.selected.indexOf(single.id) === -1) opts.push({ id: "single-existing", label: `Interested in the single-level version (${fmt(single.prices.economy)}+)` });
+    }
+    (p.extraOptions || []).forEach((label, i) => opts.push({ id: `extra${i}`, label }));
+    opts.push({ id: "none", label: "No changes — it works as is" });
+    return opts;
+  }
+
+  function renderChanges() {
+    const wrap = $("#changes-list");
+    wrap.innerHTML = state.selected.map((id, i) => {
+      const p = productById(id); const r = state.ratings[id] || {};
+      const chosen = r.changes || [];
+      return `
+        <div class="change-block" data-id="${id}">
+          <div class="cb-head">
+            <img src="${heroSrc(p)}" alt="" loading="lazy">
+            <h3><span class="badge">#${i + 1}</span>${esc(p.name)} <span class="opt">· ${esc(p.size)}${p.note ? " · " + esc(p.note) : ""}</span></h3>
+          </div>
+          <p class="q">What changes would you recommend for this unit?</p>
+          <div class="choice-grid compact">
+            ${variantOptions(p).map((o) => `
+              <label class="choice"><input type="checkbox" name="chg-${id}" value="${esc(o.label)}" data-opt="${o.id}" ${chosen.includes(o.label) ? "checked" : ""}><span>${esc(o.label)}</span></label>`).join("")}
+          </div>
+          <label for="other-${id}" class="other-label">Other changes <span class="opt">(optional)</span></label>
+          <input type="text" id="other-${id}" name="other-${id}" placeholder="e.g. add a restroom, more seating, different layout, ADA ramp, branding…" value="${esc(r.otherChange || "")}">
+        </div>`;
+    }).join("");
+  }
+
+  $("#changes-list").addEventListener("input", (e) => {
+    const block = e.target.closest(".change-block"); if (!block) return;
+    const id = block.dataset.id; const r = (state.ratings[id] = state.ratings[id] || {});
+    if (e.target.name === `chg-${id}`) {
+      // "No changes" is exclusive with the other options.
+      if (e.target.dataset.opt === "none" && e.target.checked) $$(`input[name="chg-${id}"]`, block).forEach((el) => { if (el !== e.target) el.checked = false; });
+      else if (e.target.checked) { const none = $(`input[name="chg-${id}"][data-opt="none"]`, block); if (none) none.checked = false; }
+      r.changes = $$(`input[name="chg-${id}"]:checked`, block).map((el) => el.value);
+    } else if (e.target.name === `other-${id}`) {
+      r.otherChange = e.target.value;
+    }
+    saveDraft();
+  });
+
+  // "Interested in acquiring" reveals timeline / budget / email.
+  const interested = $("#interested"), interestPanel = $("#interest-panel");
+  function syncInterest() { interestPanel.hidden = !interested.checked; if (!interested.checked) showErr("#err-timeline", false); }
+  interested.addEventListener("change", syncInterest);
 
   // ── Step 6: review ─────────────────────────────────────────────────────────
   function val(name) { const el = form.elements[name]; return el ? (el.value || "") : ""; }
@@ -280,12 +347,14 @@
     const rows = state.selected.map((id, i) => {
       const p = productById(id); const r = state.ratings[id] || {};
       const tier = TIERS.find((t) => t.id === r.tier);
+      const changes = [...(r.changes || []), r.otherChange].filter(Boolean).join("; ");
       return `<tr>
         <td>${i + 1}</td>
         <td>${esc(productLabel(p))}</td>
         <td>${tier ? `${tier.label}<br><span class="opt">${fmt(p.prices[r.tier])}</span>` : "—"}</td>
-        <td>${esc(priceLabel(r.priceRating))}</td>
+        <td>${esc(priceLabel(r.priceRating))}${r.priceNotes ? `<br><span class="opt">${esc(r.priceNotes)}</span>` : ""}</td>
         <td>${r.wouldPay != null ? fmt(r.wouldPay) : "—"}</td>
+        <td>${changes ? esc(changes) : "—"}</td>
       </tr>`;
     }).join("");
 
@@ -293,16 +362,17 @@
 
     $("#review").innerHTML = `
       <div class="review-section"><h3>About you <button type="button" class="edit" data-goto="1">Edit</button></h3>
-        ${dl([["Organization type", val("orgType")], ["Role", val("role")], ["Organization", val("orgName")], ["Name", val("name")], ["Email", val("email")]])}
+        ${dl([["Organization type", val("orgType")], ["Role", val("role")], ["Organization", val("orgName")], ["Name", val("name")]])}
       </div>
       <div class="review-section"><h3>Units, priority &amp; pricing <button type="button" class="edit" data-goto="3">Edit order</button><button type="button" class="edit" data-goto="4">Edit pricing</button></h3>
         <div class="review-wrap"><table class="review-table">
-          <thead><tr><th>#</th><th>Unit</th><th>Tier</th><th>Price feels</th><th>Would pay</th></tr></thead>
+          <thead><tr><th>#</th><th>Unit</th><th>Tier</th><th>Price feels</th><th>Would pay</th><th>Suggested changes</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
       </div>
-      <div class="review-section"><h3>Gaps &amp; timing <button type="button" class="edit" data-goto="5">Edit</button></h3>
-        ${dl([["Configurations", checked("configs").join(", ")], ["Missing models", val("missingModels")], ["Unmet needs", val("unmetNeeds")], ["Timeline", val("timeline")], ["Budget", val("budget")], ["Comments", val("comments")]])}
+      <div class="review-section"><h3>Ideas &amp; interest <button type="button" class="edit" data-goto="5">Edit</button></h3>
+        ${dl([["Units we don't offer", val("missingModels")], ["Cargotecture ideas", val("cargoIdeas")], ["Interested in acquiring", interested.checked ? "Yes" : "No"],
+              ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""], ["Email", interested.checked ? val("email") : ""], ["Comments", val("comments")]])}
       </div>`;
   }
 
@@ -322,7 +392,6 @@
     if (step === 1) {
       const orgOk = checked("orgType").length > 0; showErr("#err-orgType", !orgOk); if (!orgOk) bad($("#err-orgType"));
       const roleOk = !!val("role"); showErr("#err-role", !roleOk); $("#role").classList.toggle("invalid", !roleOk); if (!roleOk) bad($("#role"));
-      const email = $("#email"); const emailOk = !email.value || email.checkValidity(); email.classList.toggle("invalid", !emailOk); if (!emailOk) bad(email);
     }
     if (step === 2) {
       const selOk = state.selected.length > 0; showErr("#err-products", !selOk); if (!selOk) bad($("#err-products"));
@@ -336,9 +405,9 @@
         if (!(tierOk && priceOk && payOk)) bad(block);
       });
     }
-    if (step === 5) {
-      const cfgOk = checked("configs").length > 0; showErr("#err-configs", !cfgOk); if (!cfgOk) bad($("#err-configs"));
+    if (step === 5 && interested.checked) {
       const tlOk = !!val("timeline"); showErr("#err-timeline", !tlOk); $("#timeline").classList.toggle("invalid", !tlOk); if (!tlOk) bad($("#timeline"));
+      const email = $("#email"); const emailOk = !email.value || email.checkValidity(); email.classList.toggle("invalid", !emailOk); if (!emailOk) bad(email);
     }
     if (!ok && firstBad) firstBad.scrollIntoView({ behavior: "smooth", block: "center" });
     return ok;
@@ -349,6 +418,7 @@
     state.step = step;
     if (step === 3) renderRanking();
     if (step === 4) renderPricing();
+    if (step === 5) { renderChanges(); syncInterest(); }
     if (step === 6) renderReview();
 
     $$(".step", form).forEach((s) => { s.hidden = Number(s.dataset.step) !== step; });
@@ -366,10 +436,9 @@
 
   btnNext.addEventListener("click", () => { if (validateStep(state.step)) goTo(Math.min(state.step + 1, TOTAL_STEPS)); });
   btnBack.addEventListener("click", () => goTo(Math.max(state.step - 1, 1)));
-  form.addEventListener("input", (e) => { if (!e.target.closest("#pricing-list")) saveDraft(); });
+  form.addEventListener("input", (e) => { if (!e.target.closest("#pricing-list, #changes-list")) saveDraft(); });
   form.addEventListener("change", (e) => {
     if (e.target.name === "orgType") showErr("#err-orgType", false);
-    if (e.target.name === "configs") showErr("#err-configs", false);
     if (e.target.id === "role" || e.target.id === "timeline") { e.target.classList.remove("invalid"); showErr(`#err-${e.target.id}`, false); }
   });
   // Enter in a text field shouldn't submit the whole form early.
@@ -388,12 +457,12 @@
       role: val("role"),
       orgName: val("orgName").trim(),
       name: val("name").trim(),
-      email: val("email").trim(),
-      configs: checked("configs"),
+      email: interested.checked ? val("email").trim() : "",
       missingModels: val("missingModels").trim(),
-      unmetNeeds: val("unmetNeeds").trim(),
-      timeline: val("timeline"),
-      budget: val("budget"),
+      cargoIdeas: val("cargoIdeas").trim(),
+      interested: interested.checked,
+      timeline: interested.checked ? val("timeline") : "",
+      budget: interested.checked ? val("budget") : "",
       comments: val("comments").trim(),
       products: state.selected.map((id, i) => {
         const p = productById(id); const r = state.ratings[id] || {};
@@ -408,6 +477,9 @@
           priceRating: r.priceRating ?? null,
           priceRatingLabel: (PRICE_SCALE.find((s) => s.value === Number(r.priceRating)) || {}).label || "",
           wouldPay: r.wouldPay ?? null,
+          priceNotes: (r.priceNotes || "").trim(),
+          changes: r.changes || [],
+          otherChange: (r.otherChange || "").trim(),
         };
       }),
     };

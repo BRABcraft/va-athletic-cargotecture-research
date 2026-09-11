@@ -23,7 +23,7 @@
         <li data-step="2"><span class="num">2</span><span class="label">Units</span></li>
         <li data-step="3"><span class="num">3</span><span class="label">Priority</span></li>
         <li data-step="4"><span class="num">4</span><span class="label">Pricing</span></li>
-        <li data-step="5"><span class="num">5</span><span class="label">Gaps</span></li>
+        <li data-step="5"><span class="num">5</span><span class="label">Changes</span></li>
         <li data-step="6"><span class="num">6</span><span class="label">Review</span></li>
       </ol>
     </nav>
@@ -33,7 +33,7 @@
       <!-- STEP 1: About you -->
       <section class="step" data-step="1">
         <h2>About you</h2>
-        <p class="hint">Helps us understand who's answering. Name and email are optional.</p>
+        <p class="hint">Helps us understand who's answering. Name and organization are optional.</p>
 
         <fieldset>
           <legend>What type of organization are you with? <span class="req">*</span></legend>
@@ -77,10 +77,6 @@
             <label for="name">Your name <span class="opt">(optional)</span></label>
             <input type="text" id="name" name="name" autocomplete="name">
           </div>
-          <div class="field">
-            <label for="email">Email <span class="opt">(optional — only if you'd like a follow-up)</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.org">
-          </div>
         </div>
       </section>
 
@@ -118,57 +114,58 @@
         <div id="pricing-list"></div>
       </section>
 
-      <!-- STEP 5: Gaps -->
+      <!-- STEP 5: Changes & ideas -->
       <section class="step" data-step="5" hidden>
-        <h2>What are we missing?</h2>
+        <h2>What would you change?</h2>
+        <p class="hint">For each unit you picked, tell us what you'd change to make it fit your facility. Everything on this page is optional.</p>
 
-        <fieldset>
-          <legend>Which sizes and configurations would interest you? <span class="req">*</span></legend>
-          <div class="choice-grid">
-            <label class="choice"><input type="checkbox" name="configs" value="20 ft units"><span>20 ft units</span></label>
-            <label class="choice"><input type="checkbox" name="configs" value="40 ft units"><span>40 ft units</span></label>
-            <label class="choice"><input type="checkbox" name="configs" value="2-story / stacked units"><span>2-story / stacked units</span></label>
-            <label class="choice"><input type="checkbox" name="configs" value="Multiple units joined together"><span>Multiple units joined together</span></label>
-            <label class="choice"><input type="checkbox" name="configs" value="Custom sizes"><span>Custom sizes</span></label>
-            <label class="choice"><input type="checkbox" name="configs" value="Not sure yet"><span>Not sure yet</span></label>
-          </div>
-          <p class="error" id="err-configs" hidden>Please choose at least one option.</p>
-        </fieldset>
+        <div id="changes-list"></div>
 
         <div class="field">
-          <label for="missingModels">What models are we missing? <span class="opt">(optional)</span></label>
-          <textarea id="missingModels" name="missingModels" rows="3" placeholder="e.g. locker rooms, restrooms, first-aid station, storage, coaches' office…"></textarea>
+          <label for="missingModels">Is there a unit we don't offer that you'd want? <span class="opt">(optional)</span></label>
+          <textarea id="missingModels" name="missingModels" rows="3" placeholder="e.g. locker room with showers, restroom building, first-aid station, coaches' office, storage, scoreboard tower…"></textarea>
         </div>
 
         <div class="field">
-          <label for="unmetNeeds">Is there anything you need that we don't have? <span class="opt">(optional)</span></label>
-          <textarea id="unmetNeeds" name="unmetNeeds" rows="3" placeholder="Features, finishes, add-ons, services (delivery, install, financing)…"></textarea>
+          <label for="cargoIdeas">Your own ideas: how could container-built ("cargotecture") structures fit into your facilities? <span class="opt">(optional)</span></label>
+          <textarea id="cargoIdeas" name="cargoIdeas" rows="4" placeholder="Anything goes — a use we haven't thought of, a combination of units, where you'd put them, a problem you'd want them to solve…"></textarea>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="timeline">When might you purchase? <span class="req">*</span></label>
-            <select id="timeline" name="timeline">
-              <option value="">Select one…</option>
-              <option>Within 6 months</option>
-              <option>6–12 months</option>
-              <option>1–2 years</option>
-              <option>2+ years</option>
-              <option>Just researching</option>
-            </select>
-            <p class="error" id="err-timeline" hidden>Please pick a timeline.</p>
+        <label class="choice interest-toggle">
+          <input type="checkbox" id="interested" name="interested" value="Yes">
+          <span>Would you be interested in acquiring any of these products?</span>
+        </label>
+
+        <div class="interest-panel" id="interest-panel" hidden>
+          <div class="field-row">
+            <div class="field">
+              <label for="timeline">When might you purchase? <span class="req">*</span></label>
+              <select id="timeline" name="timeline">
+                <option value="">Select one…</option>
+                <option>Within 6 months</option>
+                <option>6–12 months</option>
+                <option>1–2 years</option>
+                <option>2+ years</option>
+                <option>Just researching</option>
+              </select>
+              <p class="error" id="err-timeline" hidden>Please pick a timeline.</p>
+            </div>
+            <div class="field">
+              <label for="budget">Approximate total budget <span class="opt">(optional)</span></label>
+              <select id="budget" name="budget">
+                <option value="">Select one…</option>
+                <option>Under $25,000</option>
+                <option>$25,000 – $50,000</option>
+                <option>$50,000 – $100,000</option>
+                <option>$100,000 – $250,000</option>
+                <option>$250,000 – $500,000</option>
+                <option>Over $500,000</option>
+              </select>
+            </div>
           </div>
           <div class="field">
-            <label for="budget">Approximate total budget <span class="opt">(optional)</span></label>
-            <select id="budget" name="budget">
-              <option value="">Select one…</option>
-              <option>Under $25,000</option>
-              <option>$25,000 – $50,000</option>
-              <option>$50,000 – $100,000</option>
-              <option>$100,000 – $250,000</option>
-              <option>$250,000 – $500,000</option>
-              <option>Over $500,000</option>
-            </select>
+            <label for="email">Email <span class="opt">(optional — so we can follow up)</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.org">
           </div>
         </div>
 

@@ -15,16 +15,18 @@ const RESPONSES_SHEET = "Responses";
 const PRODUCTS_SHEET = "Product Ratings";
 
 const RESPONSE_HEADERS = [
-  "Response ID", "Submitted At", "Org Type", "Role", "Organization", "Name", "Email",
+  "Response ID", "Submitted At", "Org Type", "Role", "Organization", "Name",
   "Units Selected (count)", "Units in Priority Order",
-  "Configurations of Interest", "Missing Models", "Unmet Needs",
-  "Purchase Timeline", "Budget", "Comments", "User Agent",
+  "Units We Don't Offer", "Cargotecture Ideas",
+  "Interested in Acquiring", "Email", "Purchase Timeline", "Budget",
+  "Comments", "User Agent",
 ];
 
 const PRODUCT_HEADERS = [
   "Response ID", "Submitted At", "Org Type", "Rank", "Product ID", "Product", "Size",
   "Preferred Tier", "List Price (tier)", "Price Rating (1-5)", "Price Rating Label",
-  "Would Pay", "Would Pay vs List (%)",
+  "Would Pay", "Would Pay vs List (%)", "Price Rating Notes",
+  "Suggested Changes", "Other Changes",
 ];
 
 function doPost(e) {
@@ -47,12 +49,12 @@ function doPost(e) {
       data.role || "",
       data.orgName || "",
       data.name || "",
-      data.email || "",
       list.length,
       list.map(p => `${p.rank}. ${p.product} (${p.size})`).join("\n"),
-      (data.configs || []).join(", "),
       data.missingModels || "",
-      data.unmetNeeds || "",
+      data.cargoIdeas || "",
+      data.interested ? "Yes" : "No",
+      data.email || "",
       data.timeline || "",
       data.budget || "",
       data.comments || "",
@@ -76,6 +78,9 @@ function doPost(e) {
           p.priceRatingLabel || "",
           p.wouldPay != null ? p.wouldPay : "",
           pct,
+          p.priceNotes || "",
+          (p.changes || []).join("; "),
+          p.otherChange || "",
         ];
       });
       products.getRange(products.getLastRow() + 1, 1, rows.length, PRODUCT_HEADERS.length).setValues(rows);
@@ -113,13 +118,13 @@ function testInsert() {
   const sample = {
     responseId: "test-" + Date.now().toString(36),
     submittedAt: new Date().toISOString(),
-    orgType: "High school", role: "Athletic Director", orgName: "Test HS", name: "Test", email: "",
-    configs: ["20 ft units", "2-story / stacked units"],
-    missingModels: "Locker room", unmetNeeds: "", timeline: "6–12 months", budget: "$50,000 – $100,000", comments: "test row — delete me",
+    orgType: "High school", role: "Athletic Director", orgName: "Test HS", name: "Test",
+    missingModels: "Locker room", cargoIdeas: "Stack a press box on the concession stand",
+    interested: true, email: "test@example.org", timeline: "6–12 months", budget: "$50,000 – $100,000", comments: "test row — delete me",
     userAgent: "apps-script-test",
     products: [
-      { rank: 1, productId: "press-box-20", product: "Press Box", size: "20 ft", tier: "Standard", listPrice: 40640, priceRating: 4, priceRatingLabel: "A little high", wouldPay: 35000 },
-      { rank: 2, productId: "bleacher-40", product: "Bleacher Unit", size: "40 ft", tier: "Economy", listPrice: 37050, priceRating: 3, priceRatingLabel: "About right", wouldPay: 37000 },
+      { rank: 1, productId: "press-box-20", product: "Press Box", size: "20 ft", tier: "Standard", listPrice: 40640, priceRating: 4, priceRatingLabel: "A little high", wouldPay: 35000, priceNotes: "Site-built quote was $38k", changes: ["A 40 ft version", "Add a restroom"], otherChange: "" },
+      { rank: 2, productId: "bleacher-40", product: "Bleacher Unit", size: "40 ft", tier: "Economy", listPrice: 37050, priceRating: 3, priceRatingLabel: "About right", wouldPay: 37000, priceNotes: "", changes: ["No changes — it works as is"], otherChange: "" },
     ],
   };
   const out = doPost({ postData: { contents: JSON.stringify(sample) } });
