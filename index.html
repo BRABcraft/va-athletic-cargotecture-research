@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modular Facility Survey</title>
+  <meta name="description" content="Tell us which modular sports facility units interest you and what you'd expect to pay.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <p class="eyebrow">Product &amp; pricing survey</p>
+      <h1>Help us build the units you actually need</h1>
+      <p class="lede">About 5 minutes. Tell us which modular facility units interest you most, what you think of our pricing, and what we're missing.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <nav class="progress" aria-label="Survey progress">
+      <ol id="progress-list">
+        <li data-step="1"><span class="num">1</span><span class="label">About you</span></li>
+        <li data-step="2"><span class="num">2</span><span class="label">Units</span></li>
+        <li data-step="3"><span class="num">3</span><span class="label">Priority</span></li>
+        <li data-step="4"><span class="num">4</span><span class="label">Pricing</span></li>
+        <li data-step="5"><span class="num">5</span><span class="label">Gaps</span></li>
+        <li data-step="6"><span class="num">6</span><span class="label">Review</span></li>
+      </ol>
+    </nav>
+
+    <form id="survey" novalidate>
+
+      <!-- STEP 1: About you -->
+      <section class="step" data-step="1">
+        <h2>About you</h2>
+        <p class="hint">Helps us understand who's answering. Name and email are optional.</p>
+
+        <fieldset>
+          <legend>What type of organization are you with? <span class="req">*</span></legend>
+          <div class="choice-grid">
+            <label class="choice"><input type="radio" name="orgType" value="High school"><span>High school</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="College / University"><span>College / University</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="Parks & Recreation / Municipality"><span>Parks &amp; Rec / Municipality</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="Youth league / Club"><span>Youth league / Club</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="Professional / Semi-pro team"><span>Pro / Semi-pro team</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="Private facility / Business"><span>Private facility / Business</span></label>
+            <label class="choice"><input type="radio" name="orgType" value="Other"><span>Other</span></label>
+          </div>
+          <p class="error" id="err-orgType" hidden>Please choose your organization type.</p>
+        </fieldset>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="role">Your role <span class="req">*</span></label>
+            <select id="role" name="role">
+              <option value="">Select one…</option>
+              <option>Athletic Director</option>
+              <option>Coach</option>
+              <option>Facilities / Operations Manager</option>
+              <option>Administrator / Principal / Superintendent</option>
+              <option>Booster club / Fundraising</option>
+              <option>Owner / Executive</option>
+              <option>Purchasing / Finance</option>
+              <option>Architect / Contractor</option>
+              <option>Other</option>
+            </select>
+            <p class="error" id="err-role" hidden>Please select your role.</p>
+          </div>
+          <div class="field">
+            <label for="orgName">Organization name <span class="opt">(optional)</span></label>
+            <input type="text" id="orgName" name="orgName" autocomplete="organization" placeholder="e.g. Lincoln High School">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="name">Your name <span class="opt">(optional)</span></label>
+            <input type="text" id="name" name="name" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="email">Email <span class="opt">(optional — only if you'd like a follow-up)</span></label>
+            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.org">
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: Which units -->
+      <section class="step" data-step="2" hidden>
+        <h2>Which of these units would interest you?</h2>
+        <p class="hint">Select every unit you'd consider. You'll rate pricing for each one you pick. Prices shown are the Economy starting price.</p>
+        <p class="error" id="err-products" hidden>Please select at least one unit.</p>
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+
+      <!-- STEP 3: Ranking -->
+      <section class="step" data-step="3" hidden>
+        <h2>What order would you be interested in?</h2>
+        <p class="hint">Put the units you selected in priority order — #1 is what you'd want first. Use the arrows to reorder.</p>
+        <ol class="rank-list" id="rank-list"></ol>
+      </section>
+
+      <!-- STEP 4: Pricing per product -->
+      <section class="step" data-step="4" hidden>
+        <h2>Rate the pricing</h2>
+        <p class="hint">For each unit you selected: which tier would you choose, how does that price feel, and what would you actually pay?</p>
+
+        <div class="tier-key">
+          <div><strong>Economy</strong><span>Good enough, functional, cheaper materials</span></div>
+          <div><strong>Standard</strong><span>Good balance of quality, durability, and affordability</span></div>
+          <div><strong>Luxury</strong><span>High-end materials and quality for a longer product lifespan</span></div>
+        </div>
+
+        <div id="pricing-list"></div>
+      </section>
+
+      <!-- STEP 5: Gaps -->
+      <section class="step" data-step="5" hidden>
+        <h2>What are we missing?</h2>
+
+        <fieldset>
+          <legend>Which sizes and configurations would interest you? <span class="req">*</span></legend>
+          <div class="choice-grid">
+            <label class="choice"><input type="checkbox" name="configs" value="20 ft units"><span>20 ft units</span></label>
+            <label class="choice"><input type="checkbox" name="configs" value="40 ft units"><span>40 ft units</span></label>
+            <label class="choice"><input type="checkbox" name="configs" value="2-story / stacked units"><span>2-story / stacked units</span></label>
+            <label class="choice"><input type="checkbox" name="configs" value="Multiple units joined together"><span>Multiple units joined together</span></label>
+            <label class="choice"><input type="checkbox" name="configs" value="Custom sizes"><span>Custom sizes</span></label>
+            <label class="choice"><input type="checkbox" name="configs" value="Not sure yet"><span>Not sure yet</span></label>
+          </div>
+          <p class="error" id="err-configs" hidden>Please choose at least one option.</p>
+        </fieldset>
+
+        <div class="field">
+          <label for="missingModels">What models are we missing? <span class="opt">(optional)</span></label>
+          <textarea id="missingModels" name="missingModels" rows="3" placeholder="e.g. locker rooms, restrooms, first-aid station, storage, coaches' office…"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="unmetNeeds">Is there anything you need that we don't have? <span class="opt">(optional)</span></label>
+          <textarea id="unmetNeeds" name="unmetNeeds" rows="3" placeholder="Features, finishes, add-ons, services (delivery, install, financing)…"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="timeline">When might you purchase? <span class="req">*</span></label>
+            <select id="timeline" name="timeline">
+              <option value="">Select one…</option>
+              <option>Within 6 months</option>
+              <option>6–12 months</option>
+              <option>1–2 years</option>
+              <option>2+ years</option>
+              <option>Just researching</option>
+            </select>
+            <p class="error" id="err-timeline" hidden>Please pick a timeline.</p>
+          </div>
+          <div class="field">
+            <label for="budget">Approximate total budget <span class="opt">(optional)</span></label>
+            <select id="budget" name="budget">
+              <option value="">Select one…</option>
+              <option>Under $25,000</option>
+              <option>$25,000 – $50,000</option>
+              <option>$50,000 – $100,000</option>
+              <option>$100,000 – $250,000</option>
+              <option>$250,000 – $500,000</option>
+              <option>Over $500,000</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="comments">Anything else you'd like us to know? <span class="opt">(optional)</span></label>
+          <textarea id="comments" name="comments" rows="3"></textarea>
+        </div>
+      </section>
+
+      <!-- STEP 6: Review -->
+      <section class="step" data-step="6" hidden>
+        <h2>Review &amp; submit</h2>
+        <p class="hint">Here's what you told us. Go back to change anything, or submit.</p>
+        <div id="review"></div>
+        <p class="error" id="err-submit" hidden></p>
+      </section>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn secondary" id="btn-back">Back</button>
+        <button type="button" class="btn primary" id="btn-next">Continue</button>
+        <button type="submit" class="btn primary" id="btn-submit" hidden>Submit survey</button>
+      </div>
+    </form>
+
+    <section id="thanks" class="thanks" hidden>
+      <div class="check">✓</div>
+      <h2>Thank you!</h2>
+      <p>Your responses have been recorded. We read every one of these and they directly shape which units we build next.</p>
+      <p class="small" id="thanks-id"></p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap"><p>Responses are used only for product planning. Contact info is optional and used only if you ask for a follow-up.</p></div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="survey.js"></script>
+</body>
+</html>
