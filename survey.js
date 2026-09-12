@@ -335,7 +335,10 @@
 
   // "Interested in acquiring" reveals timeline / budget / email.
   const interested = $("#interested"), interestPanel = $("#interest-panel");
-  function syncInterest() { interestPanel.hidden = !interested.checked; if (!interested.checked) showErr("#err-timeline", false); }
+  function syncInterest() {
+    interestPanel.hidden = !interested.checked;
+    if (!interested.checked) ["#err-name", "#err-email", "#err-timeline", "#err-budget"].forEach((id) => showErr(id, false));
+  }
   interested.addEventListener("change", syncInterest);
 
   // ── Step 6: review ─────────────────────────────────────────────────────────
@@ -362,7 +365,7 @@
 
     $("#review").innerHTML = `
       <div class="review-section"><h3>About you <button type="button" class="edit" data-goto="1">Edit</button></h3>
-        ${dl([["Organization type", val("orgType")], ["Role", val("role")], ["Organization", val("orgName")], ["Name", val("name")]])}
+        ${dl([["Organization type", val("orgType")], ["Role", val("role")], ["Organization", val("orgName")]])}
       </div>
       <div class="review-section"><h3>Units, priority &amp; pricing <button type="button" class="edit" data-goto="3">Edit order</button><button type="button" class="edit" data-goto="4">Edit pricing</button></h3>
         <div class="review-wrap"><table class="review-table">
@@ -372,7 +375,8 @@
       </div>
       <div class="review-section"><h3>Ideas &amp; interest <button type="button" class="edit" data-goto="5">Edit</button></h3>
         ${dl([["Units we don't offer", val("missingModels")], ["Cargotecture ideas", val("cargoIdeas")], ["Interested in acquiring", interested.checked ? "Yes" : "No"],
-              ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""], ["Email", interested.checked ? val("email") : ""], ["Comments", val("comments")]])}
+              ["Name", interested.checked ? val("name") : ""], ["Email", interested.checked ? val("email") : ""],
+              ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""], ["Comments", val("comments")]])}
       </div>`;
   }
 
@@ -406,8 +410,14 @@
       });
     }
     if (step === 5 && interested.checked) {
-      const tlOk = !!val("timeline"); showErr("#err-timeline", !tlOk); $("#timeline").classList.toggle("invalid", !tlOk); if (!tlOk) bad($("#timeline"));
-      const email = $("#email"); const emailOk = !email.value || email.checkValidity(); email.classList.toggle("invalid", !emailOk); if (!emailOk) bad(email);
+      const req = (sel, errSel, okFn) => {
+        const el = $(sel); const ok = okFn(el);
+        showErr(errSel, !ok); el.classList.toggle("invalid", !ok); if (!ok) bad(el);
+      };
+      req("#name", "#err-name", (el) => el.value.trim().length > 0);
+      req("#email", "#err-email", (el) => el.value.trim().length > 0 && el.checkValidity());
+      req("#timeline", "#err-timeline", (el) => !!el.value);
+      req("#budget", "#err-budget", (el) => !!el.value);
     }
     if (!ok && firstBad) firstBad.scrollIntoView({ behavior: "smooth", block: "center" });
     return ok;
@@ -434,12 +444,22 @@
     saveDraft();
   }
 
-  btnNext.addEventListener("click", () => { if (validateStep(state.step)) goTo(Math.min(state.step + 1, TOTAL_STEPS)); });
+  btnNext.addEventListener("click", () => {
+    const navErr = $("#err-nav"); navErr.hidden = true;
+    try {
+      if (validateStep(state.step)) goTo(Math.min(state.step + 1, TOTAL_STEPS));
+    } catch (ex) {
+      // Surface the problem instead of a button that appears to do nothing.
+      navErr.textContent = `Something went wrong moving to the next step (${ex && ex.message ? ex.message : ex}). Please try again or refresh the page.`;
+      navErr.hidden = false;
+      console.error(ex);
+    }
+  });
   btnBack.addEventListener("click", () => goTo(Math.max(state.step - 1, 1)));
   form.addEventListener("input", (e) => { if (!e.target.closest("#pricing-list, #changes-list")) saveDraft(); });
   form.addEventListener("change", (e) => {
     if (e.target.name === "orgType") showErr("#err-orgType", false);
-    if (e.target.id === "role" || e.target.id === "timeline") { e.target.classList.remove("invalid"); showErr(`#err-${e.target.id}`, false); }
+    if (["role", "timeline", "budget", "name", "email"].includes(e.target.id)) { e.target.classList.remove("invalid"); showErr(`#err-${e.target.id}`, false); }
   });
   // Enter in a text field shouldn't submit the whole form early.
   form.addEventListener("keydown", (e) => {
@@ -456,7 +476,7 @@
       orgType: val("orgType"),
       role: val("role"),
       orgName: val("orgName").trim(),
-      name: val("name").trim(),
+      name: interested.checked ? val("name").trim() : "",
       email: interested.checked ? val("email").trim() : "",
       missingModels: val("missingModels").trim(),
       cargoIdeas: val("cargoIdeas").trim(),

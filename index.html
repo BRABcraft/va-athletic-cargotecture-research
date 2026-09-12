@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modular Facility Survey</title>
   <meta name="description" content="Tell us which modular sports facility units interest you and what you'd expect to pay.">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=4">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
@@ -34,7 +34,7 @@
       <!-- STEP 1: About you -->
       <section class="step" data-step="1">
         <h2>About you</h2>
-        <p class="hint">Helps us understand who's answering. Name and organization are optional.</p>
+        <p class="hint">Helps us understand who's answering. Organization name is optional.</p>
 
         <fieldset>
           <legend>What type of organization are you with? <span class="req">*</span></legend>
@@ -73,12 +73,6 @@
           </div>
         </div>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="name">Your name <span class="opt">(optional)</span></label>
-            <input type="text" id="name" name="name" autocomplete="name">
-          </div>
-        </div>
       </section>
 
       <!-- STEP 2: Which units -->
@@ -138,6 +132,19 @@
         </label>
 
         <div class="interest-panel" id="interest-panel" hidden>
+          <p class="hint">Great — tell us how to reach you and roughly when. All four fields are required.</p>
+          <div class="field-row">
+            <div class="field">
+              <label for="name">Your name <span class="req">*</span></label>
+              <input type="text" id="name" name="name" autocomplete="name">
+              <p class="error" id="err-name" hidden>Please enter your name.</p>
+            </div>
+            <div class="field">
+              <label for="email">Email <span class="req">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.org">
+              <p class="error" id="err-email" hidden>Please enter a valid email address.</p>
+            </div>
+          </div>
           <div class="field-row">
             <div class="field">
               <label for="timeline">When might you purchase? <span class="req">*</span></label>
@@ -152,7 +159,7 @@
               <p class="error" id="err-timeline" hidden>Please pick a timeline.</p>
             </div>
             <div class="field">
-              <label for="budget">Approximate total budget <span class="opt">(optional)</span></label>
+              <label for="budget">Approximate total budget <span class="req">*</span></label>
               <select id="budget" name="budget">
                 <option value="">Select one…</option>
                 <option>Under $25,000</option>
@@ -162,11 +169,8 @@
                 <option>$250,000 – $500,000</option>
                 <option>Over $500,000</option>
               </select>
+              <p class="error" id="err-budget" hidden>Please pick a budget range.</p>
             </div>
-          </div>
-          <div class="field">
-            <label for="email">Email <span class="opt">(optional — so we can follow up)</span></label>
-            <input type="email" id="email" name="email" autocomplete="email" placeholder="you@example.org">
           </div>
         </div>
 
@@ -184,6 +188,7 @@
         <p class="error" id="err-submit" hidden></p>
       </section>
 
+      <p class="error" id="err-nav" hidden></p>
       <div class="nav-buttons">
         <button type="button" class="btn secondary" id="btn-back">Back</button>
         <button type="button" class="btn primary" id="btn-next">Continue</button>
@@ -213,7 +218,7 @@
     <div class="wrap"><p>Responses are used only for product planning. Contact info is optional and used only if you ask for a follow-up.</p></div>
   </footer>
 
-  <script src="config.js"></script>
-  <script src="survey.js"></script>
+  <script src="config.js?v=4"></script>
+  <script src="survey.js?v=4"></script>
 </body>
 </html>

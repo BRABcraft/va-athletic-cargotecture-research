@@ -15,10 +15,10 @@ const RESPONSES_SHEET = "Responses";
 const PRODUCTS_SHEET = "Product Ratings";
 
 const RESPONSE_HEADERS = [
-  "Response ID", "Submitted At", "Org Type", "Role", "Organization", "Name",
+  "Response ID", "Submitted At", "Org Type", "Role", "Organization",
   "Units Selected (count)", "Units in Priority Order",
   "Units We Don't Offer", "Cargotecture Ideas",
-  "Interested in Acquiring", "Email", "Purchase Timeline", "Budget",
+  "Interested in Acquiring", "Name", "Email", "Purchase Timeline", "Budget",
   "Comments", "User Agent",
 ];
 
@@ -48,12 +48,12 @@ function doPost(e) {
       data.orgType || "",
       data.role || "",
       data.orgName || "",
-      data.name || "",
       list.length,
       list.map(p => `${p.rank}. ${p.product} (${p.size})`).join("\n"),
       data.missingModels || "",
       data.cargoIdeas || "",
       data.interested ? "Yes" : "No",
+      data.name || "",
       data.email || "",
       data.timeline || "",
       data.budget || "",
