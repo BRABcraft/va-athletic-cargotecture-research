@@ -1,187 +1,189 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Survey configuration
 //
-// SHEETS_ENDPOINT: the "Web app" URL you get after deploying apps-script/Code.gs
-// (see README.md, step 2). It looks like:
+// SHEETS_ENDPOINT is the "Web app" URL Google hands you once you've deployed
+// apps-script/Code.gs — see step 2 of the README. It'll look something like:
 //   https://script.google.com/macros/s/AKfycb.../exec
 //
-// Until this is filled in, submissions are kept in the browser only and a
-// warning is shown on the thank-you page.
+// Leave it blank and nothing breaks, but submissions never leave the browser,
+// and the thank-you page will say so.
 // ─────────────────────────────────────────────────────────────────────────────
 window.SURVEY_CONFIG = {
   SHEETS_ENDPOINT: "https://script.google.com/macros/s/AKfycbx2nzNQDqGI6FcvFganCaJbvGk_P-qNqJgDpLneu1MYPfF-qmsG2bR6tXdw-UMSWRsuVw/exec",
 };
 
-// Product catalog. Prices, descriptions and "drivers" come from
-// Marland_Continental_Product_Pricing.xlsx (Price Worksheet + Cost Model tabs,
-// priced September 2026). Edit here and the survey updates automatically.
+// The product catalog. Prices, descriptions and "drivers" all come out of
+// Marland_Continental_Product_Pricing.xlsx (the Price Worksheet and Cost Model
+// tabs, priced September 2026). Change anything here and the survey picks it up
+// on its own.
 //
-//   images[0] is the hero shown on the product card; the rest appear in the
-//   pricing step's thumbnail strip / lightbox. Files live in images/ (full) and
-//   images/thumb/ (small), named <id>-<n>.jpg.
+//   images[0] is the hero shot on the product card; everything after it shows up
+//   in the thumbnail strip and lightbox on the pricing step. The files live in
+//   images/ at full size and images/thumb/ small, named <id>-<n>.jpg.
 //
-//   On the "What would you change?" step each unit is offered size/stacking
-//   variants automatically (a 20 ft unit gets "40 ft version", a 40 ft unit gets
-//   "20 ft version"; stacking is skipped for 2-story units, units that already
-//   have a stacked sibling, and units flagged noStacked) plus the unit-specific
-//   ideas listed in extraOptions.
+//   On the "What would you change?" step, every unit automatically gets offered
+//   the size and stacking variants that make sense for it — a 20 ft unit is
+//   offered a 40 ft version and vice versa, and stacking is left out for
+//   2-story units, for anything that already has a stacked sibling, and for
+//   anything flagged noStacked. On top of that it gets the unit-specific ideas
+//   listed in extraOptions.
 window.PRODUCTS = [
   {
     id: "bleacher-40", name: "Bleacher Unit", size: "40 ft",
     prices: { economy: 37050, standard: 71599, luxury: 131812 },
-    desc: "Single-level open-side bleacher. 4 tiered rows, ~100 seats, container-roof canopy, side access stair, perimeter guardrail.",
-    drivers: "Seating is the swing item: aluminum bench planks vs. fold-down chairs vs. chairback stadium seats. Riser frame moves from painted mild steel to hot-dip galvanized.",
+    desc: "A single-level bleacher with one side left open to the field. Four tiered rows seat about 100 people, the container roof carries over them as a canopy, and there's a stair up the side with guardrail running the perimeter.",
+    drivers: "Seating is what really moves the price: plain aluminum bench planks (economy), fold-down chairs (standard), or full chairback stadium seats (luxury). The riser frame climbs too, from painted mild steel up to hot-dip galvanized.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Higher seating capacity", "Wheelchair-accessible seating area"],
+    extraOptions: ["More seats", "Wheelchair-accessible seating"],
   },
   {
     id: "bleacher-40-stacked", name: "Bleacher Unit, Stacked", size: "40 ft", note: "2-story",
     prices: { economy: 81203, standard: 153265, luxury: 278086 },
-    desc: "Two-level stacked bleacher, ~19' overall. ~200 seats, external steel stair tower with landings, 4' cantilevered walkway, guardrails on both levels.",
-    drivers: "Everything in the single unit, doubled, plus an engineered stair tower and stacked-frame structural design. Engineering and steel roughly double between tiers.",
+    desc: "Two bleachers stacked one on the other, standing about 19' overall and seating roughly 200. An external steel stair tower with landings gets you up top, and there's a 4' cantilevered walkway and guardrails on both levels.",
+    drivers: "Everything in the single unit, twice over, plus an engineered stair tower and the structural design a stacked frame demands. Engineering and steel both roughly double as you move up the tiers.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Higher seating capacity", "Wheelchair-accessible seating area"],
+    extraOptions: ["More seats", "Wheelchair-accessible seating"],
   },
   {
     id: "press-box-20", name: "Press Box", size: "20 ft",
     prices: { economy: 23831, standard: 40640, luxury: 72021 },
-    desc: "6-station press box. 18' fold-up awning window on gas struts, full-length work counter with power and Cat6, insulated, rear steel entry door, mini-split.",
-    drivers: "The 18' fold-up window: shop-built steel with polycarbonate vs. aluminum with tempered glass vs. thermally broken with laminated low-E. Counter goes laminate to solid surface.",
+    desc: "A press box with room for six. The 18' window folds up on gas struts, a work counter runs the full length with power and Cat6 at every station, and the whole thing is insulated and cooled by a mini-split. Steel entry door at the back.",
+    drivers: "It mostly comes down to that 18' fold-up window: shop-built steel with polycarbonate at the low end, aluminum with tempered glass in the middle, thermally broken with laminated low-E at the top. The counter follows the same path, laminate up to solid surface.",
     images: ["Exterior", "Spec sheet"],
-    extraOptions: ["Rooftop filming deck", "Add a restroom"],
+    extraOptions: ["A filming deck on the roof", "A restroom"],
   },
   {
     id: "equipment-room-20", name: "Equipment Room", size: "20 ft",
     prices: { economy: 17769, standard: 29498, luxury: 53373 },
-    desc: "Secure athletic equipment storage. Adjustable shelving, lockable gear lockers, wall-mounted ball and bat racks, bench, whiteboard, louvered vents, rubber coin flooring, motion-sensor LED.",
-    drivers: "Simplest unit in the line. Spread is storage quality and climate control — wire shelving and padlocks vs. welded lockers, dehumidification and keypad entry.",
+    desc: "Somewhere secure to keep athletic gear. Adjustable shelving, lockable gear lockers, ball and bat racks on the wall, a bench, a whiteboard, louvered vents, rubber coin flooring, and LED lighting on a motion sensor.",
+    drivers: "The simplest unit in the line. What separates the tiers is storage quality and climate control: wire shelving and padlocks at one end, welded lockers with dehumidification and keypad entry at the other.",
     images: ["Exterior", "Spec sheet"],
-    extraOptions: ["Add climate control", "Add a coaches' office"],
+    extraOptions: ["Climate control", "A coaches' office"],
   },
   {
     id: "training-room-40", name: "Training Room", size: "40 ft",
     prices: { economy: 56413, standard: 98087, luxury: 168171 },
-    desc: "6-table athletic training room. 36' glass wall, glass entry door, 6 treatment tables, supply casework and wall shelving, seamless rubber floor, linear LED, dual mini-split.",
-    drivers: "36' of glazing and six treatment tables. Tables run fixed-height to electric hi-lo; glazing runs fixed aluminum to thermally broken low-E storefront.",
+    desc: "An athletic training room with six treatment tables. A 36' glass wall and glass entry door, supply casework and wall shelving, a seamless rubber floor, linear LED lighting, and two mini-splits to keep up with all that glazing.",
+    drivers: "Almost all of it is the 36' of glass and the six tables. Tables go from fixed-height up to electric hi-lo, and the glazing from fixed aluminum up to thermally broken low-E storefront.",
     images: ["Exterior", "Interior", "Plan & elevations"],
-    extraOptions: ["Add a restroom", "Add an ice bath / hydrotherapy area"],
+    extraOptions: ["A restroom", "An ice bath or hydrotherapy area"],
   },
   {
     id: "training-room-20", name: "Training Room", size: "20 ft",
     prices: { economy: 33361, standard: 58532, luxury: 108017 },
-    desc: "3-table athletic training room. 16' glass wall, glass entry door, 3 treatment tables, supply casework, wall shelving, rubber floor, linear LED, mini-split.",
-    drivers: "Same drivers as the 40', at roughly half the glazing and half the tables.",
+    desc: "The same training room at half the size, with three treatment tables. A 16' glass wall and glass entry door, supply casework, wall shelving, rubber floor, linear LED, and a single mini-split.",
+    drivers: "The same things drive the price here as in the 40' version. There's just half as much glass and half as many tables.",
     images: ["Exterior", "Interior", "Plan & elevations"],
-    extraOptions: ["Add a restroom", "Add an ice bath / hydrotherapy area"],
+    extraOptions: ["A restroom", "An ice bath or hydrotherapy area"],
   },
   {
     id: "weight-room-20", name: "Weight Room", size: "20 ft",
     prices: { economy: 32047, standard: 62552, luxury: 116441 },
-    desc: "Open-side 16' outdoor weight room. Functional trainer, power rack with bar and plates, dumbbell rack and set, 2 benches, treadmill, heavy rubber flooring, LED strips, roll-down security shutter.",
-    drivers: "Equipment is over half the cost. Economy is a budget rack and 5–50 lb dumbbells; Standard adds a functional trainer and commercial treadmill; Luxury is premium-brand throughout.",
+    desc: "An outdoor weight room with 16' of the side left open. Inside there's a functional trainer, a power rack with bar and plates, a dumbbell rack and set, two benches, a treadmill, heavy rubber flooring and LED strips — and a roll-down shutter to lock it all up at night.",
+    drivers: "Equipment is more than half the cost. Economy gets you a budget rack and 5–50 lb dumbbells, Standard adds a functional trainer and a commercial treadmill, and Luxury is premium-brand throughout.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Fully enclosed, climate-controlled version", "Add a turf / sled lane"],
+    extraOptions: ["Enclosed and climate-controlled", "A turf and sled lane"],
   },
   {
     id: "concession-20", name: "Concession Stand", size: "20 ft",
     prices: { economy: 38345, standard: 71190, luxury: 133077 },
-    desc: "16' fold-up awning serving window, full service counter, popcorn and hot-food equipment, beverage cooler, POS, hand sink and 3-compartment sink, NSF wall and floor finishes.",
-    drivers: "Health-department compliance. Economy meets minimum NSF; Standard adds full coved finishes and a warming line-up; Luxury adds a Type-I hood, ice machine and grease interceptor.",
+    desc: "A 16' awning folds up to open the serving window, with a full service counter behind it. Popcorn and hot-food equipment, a beverage cooler, POS, a hand sink and a three-compartment sink, and NSF wall and floor finishes throughout.",
+    drivers: "Health-department compliance sets both the floor and the ceiling. Economy just meets the NSF minimum; Standard adds fully coved finishes and a warming line-up; Luxury brings in a Type-I hood, an ice machine and a grease interceptor.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Add a walk-in cooler", "Full kitchen with hood"],
+    extraOptions: ["A walk-in cooler", "A full kitchen with a hood"],
   },
   {
     id: "merchandise-20", name: "Merchandise Stand", size: "20 ft",
     prices: { economy: 30284, standard: 54901, luxury: 99611 },
-    desc: "Retail team store. Full-side fold-up awning canopy with ~7' projection, slatwall and hanging rails, shelving, center display table, POS counter, track lighting, wood-look flooring, exterior lettering.",
-    drivers: "Fixtures and branding. Stock slatwall and a folding table vs. a full slatwall system vs. custom back-lit millwork. Signage budget more than triples.",
+    desc: "A retail team store. The whole side folds up into an awning canopy with about 7' of projection, and inside there's slatwall with hanging rails, shelving, a center display table, a POS counter, track lighting, wood-look flooring, and lettering on the outside.",
+    drivers: "Fixtures and branding do most of it: stock slatwall and a folding table at the low end, a full slatwall system in the middle, custom back-lit millwork at the top. The signage budget more than triples along the way.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Add secure stock storage", "Add a fitting area"],
+    extraOptions: ["Secure stock storage", "A fitting area"],
   },
   {
     id: "ticket-booth-20", name: "Ticket Booth", size: "20 ft",
     prices: { economy: 31719, standard: 54741, luxury: 96244 },
-    desc: "Split-plan gate unit. 8' walk-through turnstile bay with full-height turnstile on checker-plate deck, plus 12' conditioned ticket office with transaction window, counter shelf, desk and chair.",
-    drivers: "The turnstile: mechanical vs. counter with drop-arm vs. electronic with QR/RFID scanner integration. Transaction window follows the same curve.",
+    desc: "A gate unit split into two halves: an 8' walk-through bay with a full-height turnstile on checker-plate decking, and a 12' conditioned ticket office with a transaction window, counter shelf, desk and chair.",
+    drivers: "The turnstile costs the most: a mechanical turnstile (economy), a counting turnstile with a drop arm (standard), then an electronic one with QR and RFID scanning built in (luxury). The transaction window climbs on the same curve.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["More turnstile lanes", "Add a staff restroom"],
+    extraOptions: ["More turnstile lanes", "A staff restroom"],
   },
   {
     id: "referee-lounge-20", name: "Referee Lounge", size: "20 ft",
     prices: { economy: 23134, standard: 40495, luxury: 78799 },
-    desc: "Officials' changing and briefing room. Bank of lockers, padded bench, coat hooks, kitchenette with sink and coffee station, rubber flooring, LED panels, insulated, steel door with closer, exterior landing and ramp.",
-    drivers: "Locker grade and how far the kitchenette goes. Luxury adds a half-bath rough-in and an aluminum ADA ramp.",
+    desc: "A place for officials to change and go over the game. A bank of lockers, a padded bench, coat hooks, a kitchenette with sink and coffee station, rubber flooring, LED panels, insulation, a steel door with a closer, and a landing and ramp outside.",
+    drivers: "Mostly locker grade and how far the kitchenette goes. At the Luxury tier it also picks up a half-bath rough-in and an aluminum ADA ramp.",
     images: ["Exterior", "Interior", "Plan & elevations"],
-    extraOptions: ["Add a shower", "Add a full restroom"],
+    extraOptions: ["A shower", "A full restroom"],
   },
   {
     id: "visiting-team-40", name: "Visiting Team Facility", size: "40 ft",
     prices: { economy: 68708, standard: 112935, luxury: 172486 },
-    desc: "Combined wet-and-dry team facility. 3-stall shower room, 2 toilet compartments with 2 lavatories, mechanical closet with 3 water heaters, and a locker room with ~14 lockers and bench. Three exterior doors.",
-    drivers: "Plumbing is the swing item — three showers, two toilets and three water heaters in one 40'. Waterproofing method (FRP vs. hot-mop tile vs. porcelain) and locker grade do the rest.",
+    desc: "A combined wet-and-dry team facility in a single 40-footer: a three-stall shower room, two toilet compartments sharing two lavatories, a mechanical closet holding three water heaters, and a locker room with about 14 lockers and a bench. Three doors out to the field.",
+    drivers: "Plumbing is the swing item. We're fitting three showers, two toilets and three water heaters into one 40' box. After that it's the waterproofing method (FRP, hot-mop tile, or porcelain) and the grade of the lockers.",
     images: ["Exterior", "Plan & elevations", "Locker room", "Lavatory", "Shower room", "Toilet compartment"],
-    extraOptions: ["Add a coaches' room", "Separate home / visitor sides"],
+    extraOptions: ["A coaches' room", "Separate home and visitor sides"],
   },
   {
     id: "clubhouse-20", name: "Clubhouse + Observation Deck", size: "20 ft", note: "2-story",
     prices: { economy: 65690, standard: 108689, luxury: 188773 },
-    desc: "Two-level clubhouse. Ground-floor bar in an open-side 20' container with back bar, cooler and TV, 20' × 10' covered lower deck, and a 20' × 12' rooftop observation deck with exterior stair, guardrails and festoon lighting.",
-    drivers: "The elevated occupied roof deck. Screw piers and treated lumber vs. footings and composite vs. hot-dip galvanized with ipe and glass-infill rail. Bar equipment scales with it.",
+    desc: "Two levels. Downstairs is a bar in an open-side 20' container, with back bar, cooler and TV, opening onto a 20' × 10' covered deck. Up top sits a 20' × 12' observation deck reached by an exterior stair, with guardrails and festoon lighting.",
+    drivers: "The elevated occupied roof deck sets the price. Screw piers and treated lumber (economy), footings and composite (standard), hot-dip galvanized with ipe and glass-infill rail (luxury). The bar equipment scales along with it.",
     images: ["Exterior", "Plan & elevations"],
-    extraOptions: ["Add a restroom", "Larger rooftop deck"],
+    extraOptions: ["A restroom", "A bigger rooftop deck"],
   },
   {
     id: "vip-suite-40", name: "Luxury Suite / VIP Club", size: "40 ft",
     prices: { economy: 94064, standard: 156161, luxury: 279271 },
-    desc: "Single-level VIP club. 36' sliding glass wall, lounge with sectional and club chairs, full bar with refrigerator and ice maker, private restroom, 75\" media wall, climate control, ambient LED, and a 40' × 10' outdoor deck with cable railing.",
-    drivers: "Finish level and the glass. Fixed aluminum window wall vs. commercial slider vs. thermally broken multi-slide; laminate vs. quartz vs. stone bar; treated vs. composite vs. ipe deck. Deck is included at every tier.",
+    desc: "A single-level VIP club behind a 36' sliding glass wall. Lounge seating with a sectional and club chairs, a full bar with refrigerator and ice maker, a private restroom, a 75\" media wall, climate control and ambient LED, plus a 40' × 10' outdoor deck with cable railing.",
+    drivers: "Finish level and the glass. Fixed aluminum window wall, commercial slider, or thermally broken multi-slide; laminate, quartz or stone at the bar; treated lumber, composite or ipe on the deck. The deck itself comes with every tier.",
     images: ["Exterior", "Exterior & interiors", "Spec sheet"],
-    extraOptions: ["Kitchen / catering prep area", "Split into several smaller private suites"],
+    extraOptions: ["A kitchen or catering prep area", "Split into several smaller private suites"],
   },
   {
     id: "vip-suite-40-stacked", name: "Luxury Suite / VIP Club, Stacked", size: "40 ft", note: "2-story",
     prices: { economy: 201266, standard: 336371, luxury: 519103 },
-    desc: "Two-story VIP club, 19'-6\" overall. Main lounge and bar on level one, VIP suite and bar on level two, restroom on each floor, glazing on both levels, 40' × 8' rooftop deck with lounge and dining, interior and exterior staircases.",
-    drivers: "Everything in the single suite, doubled, plus the stack frame, an interior stair cut through the floor plate, and a third occupied level on the roof. Structural engineering roughly triples.",
+    desc: "A two-story VIP club standing 19'-6\" overall. Main lounge and bar on the first floor, a second suite and bar above it, a restroom on each level, glazing on both, and a 40' × 8' rooftop deck set up for lounging and dining. Staircases inside and out.",
+    drivers: "Everything in the single suite, twice over, plus the stack frame, an interior stair cut through the floor plate, and a third occupied level on the roof. Structural engineering roughly triples.",
     images: ["Exterior", "Spec sheet"],
-    extraOptions: ["Kitchen / catering prep area", "Split into several smaller private suites"],
+    extraOptions: ["A kitchen or catering prep area", "Split into several smaller private suites"],
   },
   {
     id: "container-stage-40", name: "Container Stage", size: "40 ft",
     prices: { economy: 92135, standard: 161510, luxury: 288802 },
-    desc: "Concert and event stage. Two 40' containers as flanking towers with a 24' × 20' performance deck between them, 16' to the roof. Truss roof with weatherproof cover, rigging points for lighting and audio, non-slip deck, access stairs, stage power distribution. AV package priced separately.",
-    drivers: "Roof truss and rigging. Bolted box truss with a tarp vs. aluminum ground-support with tensioned cover vs. motorized hoists and flown wings. Power grows from single-phase to 400A 3-phase.",
+    desc: "A stage for concerts and events. Two 40' containers stand as flanking towers with a 24' × 20' performance deck between them and 16' of clearance to the roof. Truss roof with a weatherproof cover, rigging points for lighting and audio, non-slip decking, access stairs and stage power distribution. The AV package is quoted separately.",
+    drivers: "The roof truss and rigging. Bolted box truss with a tarp at the low end, aluminum ground-support with a tensioned cover next, then motorized hoists with flown wings. Power grows from single-phase to 400A three-phase along the way.",
     images: ["Exterior", "Spec sheet"],
     noStacked: true, // stacking makes no sense for this unit
-    extraOptions: ["Backstage / green room", "Include the AV package (LED wall, audio, lighting)"],
+    extraOptions: ["A backstage green room", "Include the AV package (LED wall, audio, lighting)"],
   },
   {
     id: "dugout-40", name: "Baseball Dugout", size: "40 ft",
     prices: { economy: 29480, standard: 51456, luxury: 106299 },
-    desc: "Team dugout seating up to 15. Full-length open side with protective railing and chain-link fence, continuous bench, equipment storage with cubbies, hooks, bat and helmet racks, water cooler station, roof overhang, LED lighting, non-slip flooring.",
-    drivers: "Insulation and comfort. Economy is a painted steel box with a treated bench; Standard adds insulation, composite bench and fans; Luxury adds climate control, sound and scoreboard integration.",
+    desc: "A dugout that seats up to 15. The full length of one side is open, with protective railing and chain-link fence, a continuous bench, storage with cubbies and hooks, bat and helmet racks, a water cooler station, a roof overhang, LED lighting and non-slip flooring.",
+    drivers: "Insulation and comfort. Economy is a painted steel box with a treated bench; Standard adds insulation, a composite bench and fans; Luxury brings climate control, sound, and scoreboard integration.",
     images: ["Exterior", "Spec sheet"],
     noStacked: true, // stacking makes no sense for this unit
-    extraOptions: ["Add a restroom", "Batting cage extension"],
+    extraOptions: ["A restroom", "A batting cage extension"],
   },
 ];
 
 window.TIERS = [
-  { id: "economy",  label: "Economy",  desc: "Good enough, functional, cheaper materials" },
-  { id: "standard", label: "Standard", desc: "Good balance of quality, durability, and affordability" },
-  { id: "luxury",   label: "Luxury",   desc: "High-end materials and quality for a longer product lifespan" },
+  { id: "economy",  label: "Economy",  desc: "Functional and gets the job done, built with cheaper materials" },
+  { id: "standard", label: "Standard", desc: "A sensible balance of quality, durability and cost" },
+  { id: "luxury",   label: "Luxury",   desc: "High-end materials and workmanship, meant to last a lot longer" },
 ];
 
-// Shown in an expandable note on the pricing step so respondents know what a
-// price does and doesn't include. Summarised from the workbook's Read Me tab.
+// Shown in an expandable note on the pricing step so people know what a price
+// does and doesn't cover. Summarised from the workbook's Read Me tab.
 window.PRICING_NOTES = {
-  includes: "Each price is delivered and covers the container shell, structural steel, insulation and finishes, doors/windows/glazing, electrical/HVAC/plumbing, fixtures and equipment, paint and signage, engineering with stamped drawings, shop labor, and a freight and set allowance.",
-  excludes: "Prices do not include the site foundation (a concrete pad typically runs $4,000–$12,000; pier systems $1,500–$5,000), utility service to the pad, sales tax, local building permits, or crane time beyond what's built into the stacked and deck units. Stage AV (LED wall, audio, lighting, generator) is quoted separately.",
-  packages: "Prices are per unit, bought one at a time. Multi-unit packages would carry a discount that isn't reflected here.",
-  dated: "Priced September 2026.",
+  includes: "Every price is delivered, and covers the container shell, structural steel, insulation and finishes, doors, windows and glazing, electrical, HVAC and plumbing, fixtures and equipment, paint and signage, engineering with stamped drawings, shop labor, and an allowance for freight and set.",
+  excludes: "A few things sit outside the price. You'll still need a foundation on site: a concrete pad usually runs $4,000–$12,000 and a pier system runs $1,500–$5,000. You'll also need utility service to the pad, sales tax and local building permits. Crane time is not included, beyond what's already built into the stacked units and the ones with decks. Stage AV (LED wall, audio, lighting, generator) is quoted on its own.",
+  packages: "These are per-unit prices for buying one at a time. Order several together and there'd be a discount, which isn't reflected here.",
+  dated: "Prices as of September 2026.",
 };
 
-// 5-point price perception scale (stored as both the number and the label).
+// 5-point price perception scale (we store both the number and the label).
 window.PRICE_SCALE = [
   { value: 1, label: "Much too low" },
   { value: 2, label: "A little low" },

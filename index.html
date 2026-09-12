@@ -4,16 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modular Facility Survey</title>
-  <meta name="description" content="Tell us which modular sports facility units interest you and what you'd expect to pay.">
+  <meta name="description" content="Tell us which modular sports facility units interest you and what you'd expect to pay."><link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=4">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <p class="eyebrow">Product &amp; pricing survey</p>
-      <h1>Help us build the units you actually need</h1>
-      <p class="lede">About 5 minutes. Tell us which modular facility units interest you most, what you think of our pricing, and what we're missing.</p>
+      <p class="eyebrow">VA athletic facilities cargotecture product &amp; pricing survey</p>
+      <h1>What do athletic departments actually need?</h1>
+      <p class="lede">About 10 minutes. Tell us which modular facility units interest you most, what you think of our pricing, and what we're missing.</p>
     </div>
   </header>
 
@@ -78,7 +81,7 @@
       <!-- STEP 2: Which units -->
       <section class="step" data-step="2" hidden>
         <h2>Which of these units would interest you?</h2>
-        <p class="hint">Select every unit you'd consider — you'll rate pricing for each one you pick. Prices shown are the Economy starting price. Tap a photo to see it larger.</p>
+        <p class="hint">Select every unit you'd consider. Tap a photo to see it larger.</p>
         <p class="error" id="err-products" hidden>Please select at least one unit.</p>
         <div class="product-grid" id="product-grid"></div>
       </section>
@@ -86,7 +89,7 @@
       <!-- STEP 3: Ranking -->
       <section class="step" data-step="3" hidden>
         <h2>What order would you be interested in?</h2>
-        <p class="hint">Put the units you selected in priority order — #1 is what you'd want first. Use the arrows to reorder.</p>
+        <p class="hint">Rank the units you selected in priority order, with #1 is what you'd want first. Use the arrows to reorder.</p>
         <ol class="rank-list" id="rank-list"></ol>
       </section>
 
@@ -123,7 +126,7 @@
 
         <div class="field">
           <label for="cargoIdeas">Your own ideas: how could container-built ("cargotecture") structures fit into your facilities? <span class="opt">(optional)</span></label>
-          <textarea id="cargoIdeas" name="cargoIdeas" rows="4" placeholder="Anything goes — a use we haven't thought of, a combination of units, where you'd put them, a problem you'd want them to solve…"></textarea>
+          <textarea id="cargoIdeas" name="cargoIdeas" rows="4" placeholder="A use we haven't thought of, a combination of units, where you'd put them, a problem you'd want them to solve…"></textarea>
         </div>
 
         <label class="choice interest-toggle">
@@ -132,7 +135,7 @@
         </label>
 
         <div class="interest-panel" id="interest-panel" hidden>
-          <p class="hint">Great — tell us how to reach you and roughly when. All four fields are required.</p>
+          <p class="hint">Great. Tell us how to reach you and roughly when.</p>
           <div class="field-row">
             <div class="field">
               <label for="name">Your name <span class="req">*</span></label>

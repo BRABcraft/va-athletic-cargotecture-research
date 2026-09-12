@@ -207,8 +207,8 @@
   }
   function showLightbox() {
     const ph = lb.list[lb.i]; const p = lb.p;
-    lb.img.src = ph.src; lb.img.alt = `${p.name} — ${ph.caption}`;
-    lb.cap.textContent = `${p.name} (${p.size}) — ${ph.caption}${lb.list.length > 1 ? ` · ${lb.i + 1} of ${lb.list.length}` : ""}`;
+    lb.img.src = ph.src; lb.img.alt = `${p.name} - ${ph.caption}`;
+    lb.cap.textContent = `${p.name} (${p.size}) - ${ph.caption}${lb.list.length > 1 ? ` · ${lb.i + 1} of ${lb.list.length}` : ""}`;
     $("#lb-prev").hidden = $("#lb-next").hidden = lb.list.length < 2;
   }
   function closeLightbox() { lb.el.hidden = true; document.body.classList.remove("lb-open"); lb.img.removeAttribute("src"); if (lb.opener) lb.opener.focus(); }
@@ -293,7 +293,7 @@
       else if (state.selected.indexOf(single.id) === -1) opts.push({ id: "single-existing", label: `Interested in the single-level version (${fmt(single.prices.economy)}+)` });
     }
     (p.extraOptions || []).forEach((label, i) => opts.push({ id: `extra${i}`, label }));
-    opts.push({ id: "none", label: "No changes — it works as is" });
+    opts.push({ id: "none", label: "No changes, it works as is" });
     return opts;
   }
 
@@ -346,7 +346,7 @@
   function checked(name) { return $$(`input[name="${name}"]:checked`, form).map((el) => el.value); }
 
   function renderReview() {
-    const priceLabel = (v) => (PRICE_SCALE.find((s) => s.value === Number(v)) || {}).label || "—";
+    const priceLabel = (v) => (PRICE_SCALE.find((s) => s.value === Number(v)) || {}).label || "-";
     const rows = state.selected.map((id, i) => {
       const p = productById(id); const r = state.ratings[id] || {};
       const tier = TIERS.find((t) => t.id === r.tier);
@@ -354,10 +354,10 @@
       return `<tr>
         <td>${i + 1}</td>
         <td>${esc(productLabel(p))}</td>
-        <td>${tier ? `${tier.label}<br><span class="opt">${fmt(p.prices[r.tier])}</span>` : "—"}</td>
+        <td>${tier ? `${tier.label}<br><span class="opt">${fmt(p.prices[r.tier])}</span>` : "-"}</td>
         <td>${esc(priceLabel(r.priceRating))}${r.priceNotes ? `<br><span class="opt">${esc(r.priceNotes)}</span>` : ""}</td>
-        <td>${r.wouldPay != null ? fmt(r.wouldPay) : "—"}</td>
-        <td>${changes ? esc(changes) : "—"}</td>
+        <td>${r.wouldPay != null ? fmt(r.wouldPay) : "-"}</td>
+        <td>${changes ? esc(changes) : "-"}</td>
       </tr>`;
     }).join("");
 
@@ -534,7 +534,7 @@
       clearDraft();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (ex) {
-      err.textContent = "Sorry — we couldn't send your response. Check your connection and try again.";
+      err.textContent = "Sorry, we couldn't send your response. Check your connection and try again.";
       err.hidden = false;
       btnSubmit.disabled = false; btnSubmit.textContent = "Submit survey";
     }
