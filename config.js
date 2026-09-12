@@ -9,7 +9,7 @@
 // warning is shown on the thank-you page.
 // ─────────────────────────────────────────────────────────────────────────────
 window.SURVEY_CONFIG = {
-  SHEETS_ENDPOINT: "",
+  SHEETS_ENDPOINT: "https://script.google.com/macros/s/AKfycbx2nzNQDqGI6FcvFganCaJbvGk_P-qNqJgDpLneu1MYPfF-qmsG2bR6tXdw-UMSWRsuVw/exec",
 };
 
 // Product catalog. Prices, descriptions and "drivers" come from
