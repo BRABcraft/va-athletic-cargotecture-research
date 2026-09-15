@@ -333,11 +333,17 @@
     saveDraft();
   });
 
-  // "Interested in acquiring" reveals timeline / budget / email.
-  const interested = $("#interested"), interestPanel = $("#interest-panel");
+  // "Interested in acquiring" reveals timeline / budget / email, plus the
+  // optional sponsorship / naming-rights question. The funding box lives inside
+  // that panel, so it only counts when the panel is open.
+  const interested = $("#interested"), interestPanel = $("#interest-panel"), fundingBox = $("#interestedInFunding");
+  const wantsFunding = () => !!(interested.checked && fundingBox && fundingBox.checked);
   function syncInterest() {
     interestPanel.hidden = !interested.checked;
-    if (!interested.checked) ["#err-name", "#err-email", "#err-timeline", "#err-budget"].forEach((id) => showErr(id, false));
+    if (!interested.checked) {
+      ["#err-name", "#err-email", "#err-timeline", "#err-budget"].forEach((id) => showErr(id, false));
+      if (fundingBox) fundingBox.checked = false; // a hidden "yes" shouldn't ride along
+    }
   }
   interested.addEventListener("change", syncInterest);
 
@@ -376,7 +382,8 @@
       <div class="review-section"><h3>Ideas &amp; interest <button type="button" class="edit" data-goto="5">Edit</button></h3>
         ${dl([["Units we don't offer", val("missingModels")], ["Cargotecture ideas", val("cargoIdeas")], ["Interested in acquiring", interested.checked ? "Yes" : "No"],
               ["Name", interested.checked ? val("name") : ""], ["Email", interested.checked ? val("email") : ""],
-              ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""], ["Comments", val("comments")]])}
+              ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""],
+              ["Sponsorship / naming rights", interested.checked ? (wantsFunding() ? "Yes, interested" : "Not right now") : ""], ["Comments", val("comments")]])}
       </div>`;
   }
 
@@ -404,6 +411,7 @@
       state.selected.forEach((id) => {
         const r = state.ratings[id] || {}; const block = $(`.price-block[data-id="${id}"]`);
         const tierOk = !!r.tier, priceOk = !!r.priceRating, payOk = r.wouldPay != null && r.wouldPay >= 0;
+        if (!block) { if (!(tierOk && priceOk && payOk)) bad(null); return; } // not rendered yet (e.g. a restored draft jumped straight to review)
         $(".err-tier", block).hidden = tierOk; $(".err-price", block).hidden = priceOk; $(".err-pay", block).hidden = payOk;
         block.classList.toggle("invalid", !(tierOk && priceOk && payOk));
         if (!(tierOk && priceOk && payOk)) bad(block);
@@ -423,13 +431,23 @@
     return ok;
   }
 
+  // Make sure every step's DOM exists before validating it — a restored draft
+  // can drop the visitor straight onto a later step (e.g. Review) without ever
+  // rendering the steps in between, and validateStep for step N reads DOM that
+  // only render{Ranking,Pricing,Changes}() would have created.
+  function ensureRendered(step) {
+    if (step === 3) renderRanking();
+    if (step === 4) renderPricing();
+    if (step === 5) renderChanges();
+  }
+
   // ── Navigation ─────────────────────────────────────────────────────────────
   function goTo(step, opts) {
     state.step = step;
     if (step === 3) renderRanking();
     if (step === 4) renderPricing();
     if (step === 5) { renderChanges(); syncInterest(); }
-    if (step === 6) renderReview();
+    if (step === 6) { renderReview(); if (window.CommunityResults && endpointUrl()) window.CommunityResults.prefetch(endpointUrl()); }
 
     $$(".step", form).forEach((s) => { s.hidden = Number(s.dataset.step) !== step; });
     $$("#progress-list li").forEach((li) => {
@@ -484,6 +502,7 @@
       timeline: interested.checked ? val("timeline") : "",
       budget: interested.checked ? val("budget") : "",
       comments: val("comments").trim(),
+      interestedInFunding: wantsFunding(),
       products: state.selected.map((id, i) => {
         const p = productById(id); const r = state.ratings[id] || {};
         const tier = TIERS.find((t) => t.id === r.tier);
@@ -505,38 +524,75 @@
     };
   }
 
+  const endpointUrl = () => (CONFIG.SHEETS_ENDPOINT || "").trim();
+
+  // "See what others are thinking": live aggregate from the sheet, or the
+  // built-in sample when there's no endpoint yet (so the owner can preview it).
+  function showCommunityResults(endpoint, responseId) {
+    const CR = window.CommunityResults; if (!CR) return;
+    if (endpoint) CR.load(endpoint, responseId);
+    else CR.render(CR.sampleStats(), { note: "sample data" });
+  }
+
   async function submit(payload) {
-    const endpoint = (CONFIG.SHEETS_ENDPOINT || "").trim();
+    const endpoint = endpointUrl();
     if (!endpoint) return { sent: false, reason: "no-endpoint" };
     // Apps Script web apps don't return CORS headers, so we post opaque
     // (no-cors) with a text/plain body — the script still receives the JSON.
-    await fetch(endpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    await fetch(endpoint, { method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
     return { sent: true };
   }
 
-  form.addEventListener("submit", async (e) => {
+  // Save status on the thank-you page. The page appears immediately; the POST
+  // and the community-results fetch run in parallel behind it.
+  function setSaveStatus(state, payload) {
+    const el = $("#thanks-status"); if (!el) return;
+    el.className = "save-status " + state;
+    if (state === "saving") el.innerHTML = `<span class="cr-spin" aria-hidden="true"></span> Saving your answers…`;
+    else if (state === "saved") el.innerHTML = `Your responses have been recorded.`;
+    else if (state === "failed") {
+      el.innerHTML = `We couldn't reach our server to save your answers. Your responses are kept in this browser. <button type="button" class="btn secondary small" id="btn-retry">Try again</button>`;
+      $("#btn-retry").addEventListener("click", () => sendPayload(payload));
+    }
+  }
+
+  async function sendPayload(payload) {
+    setSaveStatus("saving", payload);
+    try {
+      await submit(payload);
+      setSaveStatus("saved", payload);
+      try { localStorage.removeItem("facility-survey-unsent-" + payload.responseId); } catch (_) {}
+    } catch (ex) {
+      console.warn("submit failed", ex);
+      try { localStorage.setItem("facility-survey-unsent-" + payload.responseId, JSON.stringify(payload)); } catch (_) {}
+      setSaveStatus("failed", payload);
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     // Re-validate everything in case a draft was restored with gaps.
-    for (const s of [1, 2, 4, 5]) { if (!validateStep(s)) { goTo(s); return; } }
+    for (const s of [1, 2, 4, 5]) { ensureRendered(s); if (!validateStep(s)) { goTo(s); return; } }
 
-    const err = $("#err-submit"); err.hidden = true;
     btnSubmit.disabled = true; btnSubmit.textContent = "Submitting…";
     const payload = buildPayload();
-    try {
-      const result = await submit(payload);
-      form.hidden = true; $(".progress").hidden = true;
-      const thanks = $("#thanks"); thanks.hidden = false;
-      $("#thanks-id").textContent = `Reference: ${payload.responseId}`;
-      if (!result.sent) {
-        thanks.insertAdjacentHTML("beforeend", `<div class="warn-box"><strong>Setup note (visible to the site owner):</strong> no Google Sheets endpoint is configured in <code>config.js</code>, so this response was not saved anywhere. See README.md to connect the sheet.</div>`);
-        try { localStorage.setItem("facility-survey-unsent-" + payload.responseId, JSON.stringify(payload)); } catch (_) {}
-      }
-      clearDraft();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (ex) {
-      err.textContent = "Sorry, we couldn't send your response. Check your connection and try again.";
-      err.hidden = false;
-      btnSubmit.disabled = false; btnSubmit.textContent = "Submit survey";
+    const endpoint = endpointUrl();
+
+    // Show the thank-you page right away; don't make people wait on the round trip.
+    form.hidden = true; $(".progress").hidden = true;
+    const thanks = $("#thanks"); thanks.hidden = false;
+    $("#thanks-id").textContent = `Reference: ${payload.responseId}`;
+    clearDraft();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (endpoint) {
+      sendPayload(payload);                      // POST in the background
+      showCommunityResults(endpoint, payload.responseId); // stats GET at the same time, not after
+    } else {
+      setSaveStatus("failed", payload);
+      thanks.insertAdjacentHTML("beforeend", `<div class="warn-box"><strong>Setup note (visible to the site owner):</strong> no Google Sheets endpoint is configured in <code>config.js</code>, so this response was not saved anywhere. See README.md to connect the sheet.</div>`);
+      try { localStorage.setItem("facility-survey-unsent-" + payload.responseId, JSON.stringify(payload)); } catch (_) {}
+      showCommunityResults("", payload.responseId);
     }
   });
 
@@ -544,4 +600,13 @@
   loadDraft();
   renderProducts();
   goTo(state.step, { noScroll: true });
+
+  // index.html?demo previews the thank-you page and community results with
+  // sample data; ?demo=live fetches the real aggregate from the sheet instead.
+  const demo = new URLSearchParams(location.search).get("demo");
+  if (demo !== null) {
+    form.hidden = true; $(".progress").hidden = true; $("#thanks").hidden = false;
+    $("#thanks-id").textContent = "Preview — nothing was submitted";
+    showCommunityResults(demo === "live" ? endpointUrl() : "", "");
+  }
 })();

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=11">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
@@ -81,6 +81,7 @@
       <!-- STEP 2: Which units -->
       <section class="step" data-step="2" hidden>
         <h2>Which of these units would interest you?</h2>
+        <p class="cheer">Thank you, that was the easy part. Now the fun bit: the units.</p>
         <p class="hint">Select every unit you'd consider. Tap a photo to see it larger.</p>
         <p class="error" id="err-products" hidden>Please select at least one unit.</p>
         <div class="product-grid" id="product-grid"></div>
@@ -89,6 +90,7 @@
       <!-- STEP 3: Ranking -->
       <section class="step" data-step="3" hidden>
         <h2>What order would you be interested in?</h2>
+        <p class="cheer">Thanks for those picks. Only a couple more minutes from here.</p>
         <p class="hint">Rank the units you selected in priority order, with #1 is what you'd want first. Use the arrows to reorder.</p>
         <ol class="rank-list" id="rank-list"></ol>
       </section>
@@ -96,6 +98,7 @@
       <!-- STEP 4: Pricing per product -->
       <section class="step" data-step="4" hidden>
         <h2>Rate the pricing</h2>
+        <p class="cheer">You're halfway there. Thank you for sticking with us; this is the part we learn the most from.</p>
         <p class="hint">For each unit you selected: which tier would you choose, how does that price feel, and what would you actually pay?</p>
 
         <div class="tier-key">
@@ -115,13 +118,14 @@
       <!-- STEP 5: Changes & ideas -->
       <section class="step" data-step="5" hidden>
         <h2>What would you change?</h2>
+        <p class="cheer">Thank you, that was the hard part. Only a couple more minutes and you're done.</p>
         <p class="hint">For each unit you picked, tell us what you'd change to make it fit your facility. Everything on this page is optional.</p>
 
         <div id="changes-list"></div>
 
         <div class="field">
           <label for="missingModels">Is there a unit we don't offer that you'd want? <span class="opt">(optional)</span></label>
-          <textarea id="missingModels" name="missingModels" rows="3" placeholder="e.g. locker room with showers, restroom building, first-aid station, coaches' office, storage, scoreboard tower…"></textarea>
+          <textarea id="missingModels" name="missingModels" rows="3" placeholder="e.g. public restroom building, coaches' office, storage, scoreboard tower…"></textarea>
         </div>
 
         <div class="field">
@@ -129,7 +133,7 @@
           <textarea id="cargoIdeas" name="cargoIdeas" rows="4" placeholder="A use we haven't thought of, a combination of units, where you'd put them, a problem you'd want them to solve…"></textarea>
         </div>
 
-        <label class="choice interest-toggle">
+        <label class="choice interest-toggle" style="background-color:#e8f3f6;">
           <input type="checkbox" id="interested" name="interested" value="Yes">
           <span>Would you be interested in acquiring any of these products?</span>
         </label>
@@ -150,13 +154,14 @@
           </div>
           <div class="field-row">
             <div class="field">
-              <label for="timeline">When might you purchase? <span class="req">*</span></label>
+              <label for="timeline">When would you like us to get back to you?<span class="req">*</span></label>
               <select id="timeline" name="timeline">
                 <option value="">Select one…</option>
+                <option>Right now</option>
+                <option>Within 90 days</option>
                 <option>Within 6 months</option>
                 <option>6–12 months</option>
-                <option>1–2 years</option>
-                <option>2+ years</option>
+                <option>1+ years</option>
                 <option>Just researching</option>
               </select>
               <p class="error" id="err-timeline" hidden>Please pick a timeline.</p>
@@ -175,6 +180,10 @@
               <p class="error" id="err-budget" hidden>Please pick a budget range.</p>
             </div>
           </div>
+          <label class="choice interest-toggle funding-toggle">
+            <input type="checkbox" id="interestedInFunding" name="interestedInFunding" value="Yes">
+            <span>Would you be interested in exploring ways to help fund the products through sponsorships or naming rights?</span>
+          </label>
         </div>
 
         <div class="field">
@@ -202,9 +211,12 @@
     <section id="thanks" class="thanks" hidden>
       <div class="check">✓</div>
       <h2>Thank you!</h2>
-      <p>Your responses have been recorded. We read every one of these and they directly shape which units we build next.</p>
+      <p class="save-status" id="thanks-status"></p>
+      <p>You made it all the way through, and we're genuinely grateful for the time you gave us today. We read every one of these and they directly shape which units we build next.</p>
       <p class="small" id="thanks-id"></p>
     </section>
+
+    <section id="community" class="community" hidden aria-live="polite"></section>
   </main>
 
   <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Product photo">
@@ -221,7 +233,8 @@
     <div class="wrap"><p>Responses are used only for product planning. Contact info is optional and used only if you ask for a follow-up.</p></div>
   </footer>
 
-  <script src="config.js?v=4"></script>
-  <script src="survey.js?v=4"></script>
+  <script src="config.js?v=11"></script>
+  <script src="results.js?v=11"></script>
+  <script src="survey.js?v=11"></script>
 </body>
 </html>

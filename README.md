@@ -8,6 +8,7 @@ A static, single-page customer survey (plain HTML/CSS/JS — no build step) that
 4. For each pick: see the photos, a one-line description and what moves the price between tiers, then choose a tier (Economy / Standard / Luxury), rate the price on a 5-point scale, say what they'd realistically pay, and optionally explain the rating. An expandable note explains what the prices include and exclude.
 5. "What would you change?" — for each picked unit, smart variant checkboxes (a 20 ft unit is offered a 40 ft version and vice versa; stacking is only offered where it makes sense; 2-story units are offered single-level) plus unit-specific ideas and a free-text "other changes" box. Then: units we don't offer, the respondent's own cargotecture ideas, and a **"Would you be interested in acquiring any of these products?"** checkbox that reveals name, email, timeline and budget (all required when checked, hidden otherwise)
 6. Shows a review page, then submits to **Google Sheets** via a Google Apps Script web app
+7. Thanks them with a live, anonymised summary of everyone else's answers (response count, top 3 units, who's responding, tier and price-feel charts, and quotes from the open-ended answers)
 
 Answers are saved to `localStorage` as a draft so a refresh doesn't lose progress.
 
@@ -20,6 +21,7 @@ Answers are saved to `localStorage` as a draft so a refresh doesn't lose progres
 | `config.js` | **Edit this**: Sheets endpoint URL, product list (prices, descriptions, price drivers, photo captions), tier descriptions, pricing notes |
 | `images/`, `images/thumb/` | Product photos, `<product-id>-<n>.jpg`. `-1` is the hero. Resized from the originals in *Marland continental products* (full ~1400px, thumbs ~520px) |
 | `survey.js` | Survey logic: rendering, validation, ranking, submit |
+| `results.js` | The "See what N others are thinking" section on the thank-you page: KPI tiles, top-3 units, donut charts, floating quotes. Reads `<SHEETS_ENDPOINT>?action=stats` |
 | `apps-script/Code.gs` | Google Apps Script that receives submissions and writes to the sheet |
 
 ## Setup
@@ -54,11 +56,17 @@ The site will be live at `https://<your-user>.github.io/facility-survey/` within
    ```
 6. Commit and push. Submissions now land in the sheet.
 
+The same deployment also serves `GET <url>?action=stats`, the anonymised aggregate behind the results section (no names, emails or organisation names ever leave the sheet; quotes that look like contact details are dropped). It's cached for three minutes. Pass `&exclude=<responseId>` to leave one response out, which is how the thank-you page shows "N *others*".
+
+To preview the thank-you page and results without submitting anything, open `index.html?demo` (built-in sample data) or `index.html?demo=live` (real numbers from the sheet).
+
+Rows are written **by column name**, matched against the sheet's own header row, so reordering columns in the sheet is safe and any header the sheet lacks is added on the right automatically. If a sheet's headers ever get out of step with the code, run `checkHeaders` from the editor to see what differs, or `resetResponsesSheet` to archive the current Responses tab as "Responses (old …)" and start a fresh one with the standard headers (Product Ratings is left untouched).
+
 > **If you edit `Code.gs` later**, you must publish a new version: **Deploy → Manage deployments → ✏ Edit → Version: New version → Deploy**. The URL stays the same.
 
 ### What lands in the sheet
 
-**Responses** — one row per person: ID, timestamp, org type, role, organization, number of units selected, units in priority order, units we don't offer, cargotecture ideas, interested in acquiring (Yes/No), name, email, timeline, budget, comments, user agent. Name/email/timeline/budget are only filled when "interested" was checked.
+**Responses** — one row per person: ID, timestamp, org type, role, organization, number of units selected, units in priority order, units we don't offer, cargotecture ideas, interested in acquiring (Yes/No), name, email, timeline, budget, comments, user agent, interested in sponsorship / naming-rights funding (Yes/No). Name/email/timeline/budget/funding are only filled when "interested" was checked.
 
 **Product Ratings** — one row per unit a person selected (long format, ideal for pivot tables): response ID, timestamp, org type, rank, product, size, preferred tier, list price for that tier, price rating (1 = much too low … 5 = much too high) and its label, what they'd pay, % difference vs list, price-rating notes, suggested changes (checkbox labels, `;`-separated), other changes (free text).
 

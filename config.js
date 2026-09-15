@@ -9,7 +9,7 @@
 // and the thank-you page will say so.
 // ─────────────────────────────────────────────────────────────────────────────
 window.SURVEY_CONFIG = {
-  SHEETS_ENDPOINT: "https://script.google.com/macros/s/AKfycbx2nzNQDqGI6FcvFganCaJbvGk_P-qNqJgDpLneu1MYPfF-qmsG2bR6tXdw-UMSWRsuVw/exec",
+  SHEETS_ENDPOINT: "https://script.google.com/macros/s/AKfycbyZYWEWQTh5DnWPhqaSwCtC0s6o5638unwqwiNxRelsJyN0ebHE1xIgKZ92JE76Oc77XQ/exec",
 };
 
 // The product catalog. Prices, descriptions and "drivers" all come out of
