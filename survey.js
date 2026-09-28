@@ -56,7 +56,7 @@
       $$("input[name], select[name], textarea[name]", form).forEach((el) => {
         if (el.closest("#product-grid, #pricing-list, #changes-list")) return; // rendered separately
         if (el.type === "radio") el.checked = f[el.name] === el.value;
-        else if (el.type === "checkbox") el.checked = Array.isArray(f[el.name]) && f[el.name].includes(el.value);
+        else if (el.type === "checkbox") { if (f[el.name] !== undefined) el.checked = Array.isArray(f[el.name]) && f[el.name].includes(el.value); } // absent from an older draft → keep the HTML default
         else if (f[el.name] !== undefined) el.value = f[el.name];
       });
     } catch (_) { /* ignore corrupt draft */ }
@@ -344,8 +344,23 @@
       ["#err-name", "#err-email", "#err-timeline", "#err-budget"].forEach((id) => showErr(id, false));
       if (fundingBox) fundingBox.checked = false; // a hidden "yes" shouldn't ride along
     }
+    syncKeep();
   }
   interested.addEventListener("change", syncInterest);
+
+  // "Keep me posted" is checked by default and asks for an email. If they've
+  // already given one in the "interested" panel, that one is reused instead of
+  // asking twice.
+  const keepBox = $("#keepPosted"), keepPanel = $("#keep-panel"), keepField = $("#keep-email-field"), keepNote = $("#keep-note");
+  function syncKeep() {
+    keepPanel.hidden = !keepBox.checked;
+    keepField.hidden = interested.checked;
+    keepNote.hidden = !interested.checked;
+    if (!keepBox.checked || interested.checked) { showErr("#err-keepEmail", false); $("#keepEmail").classList.remove("invalid"); }
+  }
+  keepBox.addEventListener("change", syncKeep);
+  const contactEmail = () => interested.checked ? val("email").trim() : (keepBox.checked ? val("keepEmail").trim() : "");
+  const keepsPosted = () => keepBox.checked && !!contactEmail();
 
   // ── Step 6: review ─────────────────────────────────────────────────────────
   function val(name) { const el = form.elements[name]; return el ? (el.value || "") : ""; }
@@ -381,9 +396,10 @@
       </div>
       <div class="review-section"><h3>Ideas &amp; interest <button type="button" class="edit" data-goto="5">Edit</button></h3>
         ${dl([["Units we don't offer", val("missingModels")], ["Cargotecture ideas", val("cargoIdeas")], ["Interested in acquiring", interested.checked ? "Yes" : "No"],
-              ["Name", interested.checked ? val("name") : ""], ["Email", interested.checked ? val("email") : ""],
+              ["Name", interested.checked ? val("name") : ""],
               ["Timeline", interested.checked ? val("timeline") : ""], ["Budget", interested.checked ? val("budget") : ""],
-              ["Sponsorship / naming rights", interested.checked ? (wantsFunding() ? "Yes, interested" : "Not right now") : ""], ["Comments", val("comments")]])}
+              ["Sponsorship / naming rights", interested.checked ? (wantsFunding() ? "Yes, interested" : "Not right now") : ""],
+              ["Keep me posted", keepsPosted() ? "Yes" : "No"], ["Email", contactEmail()], ["Comments", val("comments")]])}
       </div>`;
   }
 
@@ -417,16 +433,19 @@
         if (!(tierOk && priceOk && payOk)) bad(block);
       });
     }
+    const req = (sel, errSel, okFn) => {
+      const el = $(sel); const ok = okFn(el);
+      showErr(errSel, !ok); el.classList.toggle("invalid", !ok); if (!ok) bad(el);
+    };
+    const emailOk = (el) => el.value.trim().length > 0 && el.checkValidity();
     if (step === 5 && interested.checked) {
-      const req = (sel, errSel, okFn) => {
-        const el = $(sel); const ok = okFn(el);
-        showErr(errSel, !ok); el.classList.toggle("invalid", !ok); if (!ok) bad(el);
-      };
       req("#name", "#err-name", (el) => el.value.trim().length > 0);
-      req("#email", "#err-email", (el) => el.value.trim().length > 0 && el.checkValidity());
+      req("#email", "#err-email", emailOk);
       req("#timeline", "#err-timeline", (el) => !!el.value);
       req("#budget", "#err-budget", (el) => !!el.value);
     }
+    // Checked "keep me posted" needs an email, unless the interested panel already has one.
+    if (step === 5 && keepBox.checked && !interested.checked) req("#keepEmail", "#err-keepEmail", emailOk);
     if (!ok && firstBad) firstBad.scrollIntoView({ behavior: "smooth", block: "center" });
     return ok;
   }
@@ -477,7 +496,7 @@
   form.addEventListener("input", (e) => { if (!e.target.closest("#pricing-list, #changes-list")) saveDraft(); });
   form.addEventListener("change", (e) => {
     if (e.target.name === "orgType") showErr("#err-orgType", false);
-    if (["role", "timeline", "budget", "name", "email"].includes(e.target.id)) { e.target.classList.remove("invalid"); showErr(`#err-${e.target.id}`, false); }
+    if (["role", "timeline", "budget", "name", "email", "keepEmail"].includes(e.target.id)) { e.target.classList.remove("invalid"); showErr(`#err-${e.target.id}`, false); }
   });
   // Enter in a text field shouldn't submit the whole form early.
   form.addEventListener("keydown", (e) => {
@@ -495,7 +514,8 @@
       role: val("role"),
       orgName: val("orgName").trim(),
       name: interested.checked ? val("name").trim() : "",
-      email: interested.checked ? val("email").trim() : "",
+      email: contactEmail(),
+      keepPosted: keepsPosted(),
       missingModels: val("missingModels").trim(),
       cargoIdeas: val("cargoIdeas").trim(),
       interested: interested.checked,

@@ -19,7 +19,8 @@ const RESPONSE_HEADERS = [
   "Units Selected (count)", "Units in Priority Order",
   "Units We Don't Offer", "Cargotecture Ideas",
   "Interested in Acquiring", "Name", "Email", "Purchase Timeline", "Budget",
-  "Comments", "User Agent", "Interested in funding through intellectual property"
+  "Comments", "User Agent", "Interested in funding through intellectual property",
+  "Keep Me Posted"
 ];
 
 const PRODUCT_HEADERS = [
@@ -60,6 +61,7 @@ function doPost(e) {
       "Comments": data.comments || "",
       "User Agent": data.userAgent || "",
       "Interested in funding through intellectual property": data.interestedInFunding ? "Yes" : "No",
+      "Keep Me Posted": data.keepPosted ? "Yes" : "No",
     });
 
     if (list.length) {
@@ -173,6 +175,7 @@ function getStats_(excludeId) {
     count,
     interested: yes("Interested in Acquiring"),
     interestedInFunding: yes("Interested in funding through intellectual property"),
+    keepPosted: yes("Keep Me Posted"),
     avgUnitsSelected: count ? Math.round((unitsSelected / count) * 10) / 10 : 0,
     orgTypes: tally(responses, "Org Type"),
     roles: tally(responses, "Role"),
@@ -293,7 +296,7 @@ function testInsert() {
     submittedAt: new Date().toISOString(),
     orgType: "High school", role: "Athletic Director", orgName: "Test HS", name: "Test",
     missingModels: "Locker room", cargoIdeas: "Stack a press box on the concession stand",
-    interested: true, email: "test@example.org", timeline: "6–12 months", budget: "$50,000 – $100,000", comments: "test row — delete me",
+    interested: true, keepPosted: true, email: "test@example.org", timeline: "6–12 months", budget: "$50,000 – $100,000", comments: "test row — delete me",
     userAgent: "apps-script-test",
     products: [
       { rank: 1, productId: "press-box-20", product: "Press Box", size: "20 ft", tier: "Standard", listPrice: 40640, priceRating: 4, priceRatingLabel: "A little high", wouldPay: 35000, priceNotes: "Site-built quote was $38k", changes: ["A 40 ft version", "Add a restroom"], otherChange: "" },

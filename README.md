@@ -6,7 +6,7 @@ A static, single-page customer survey (plain HTML/CSS/JS — no build step) that
 2. Lets them pick which modular units interest them (17 products, each with a hero photo; tap to open a lightbox gallery)
 3. Has them rank the picks in priority order
 4. For each pick: see the photos, a one-line description and what moves the price between tiers, then choose a tier (Economy / Standard / Luxury), rate the price on a 5-point scale, say what they'd realistically pay, and optionally explain the rating. An expandable note explains what the prices include and exclude.
-5. "What would you change?" — for each picked unit, smart variant checkboxes (a 20 ft unit is offered a 40 ft version and vice versa; stacking is only offered where it makes sense; 2-story units are offered single-level) plus unit-specific ideas and a free-text "other changes" box. Then: units we don't offer, the respondent's own cargotecture ideas, and a **"Would you be interested in acquiring any of these products?"** checkbox that reveals name, email, timeline and budget (all required when checked, hidden otherwise)
+5. "What would you change?" — for each picked unit, smart variant checkboxes (a 20 ft unit is offered a 40 ft version and vice versa; stacking is only offered where it makes sense; 2-story units are offered single-level) plus unit-specific ideas and a free-text "other changes" box. Then: units we don't offer, the respondent's own cargotecture ideas, and a **"Would you be interested in acquiring any of these products?"** checkbox that reveals name, email, timeline and budget (all required when checked, hidden otherwise), and a **"Keep me posted"** checkbox, checked by default, that asks for an email (required while it stays checked; reuses the email above if they said they're interested)
 6. Shows a review page, then submits to **Google Sheets** via a Google Apps Script web app
 7. Thanks them with a live, anonymised summary of everyone else's answers (response count, top 3 units, who's responding, tier and price-feel charts, and quotes from the open-ended answers)
 
@@ -66,7 +66,7 @@ Rows are written **by column name**, matched against the sheet's own header row,
 
 ### What lands in the sheet
 
-**Responses** — one row per person: ID, timestamp, org type, role, organization, number of units selected, units in priority order, units we don't offer, cargotecture ideas, interested in acquiring (Yes/No), name, email, timeline, budget, comments, user agent, interested in sponsorship / naming-rights funding (Yes/No). Name/email/timeline/budget/funding are only filled when "interested" was checked.
+**Responses** — one row per person: ID, timestamp, org type, role, organization, number of units selected, units in priority order, units we don't offer, cargotecture ideas, interested in acquiring (Yes/No), name, email, timeline, budget, comments, user agent, interested in sponsorship / naming-rights funding (Yes/No), keep me posted (Yes/No). Name/timeline/budget/funding are only filled when "interested" was checked; Email is filled when "interested" or "keep me posted" was checked.
 
 **Product Ratings** — one row per unit a person selected (long format, ideal for pivot tables): response ID, timestamp, org type, rank, product, size, preferred tier, list price for that tier, price rating (1 = much too low … 5 = much too high) and its label, what they'd pay, % difference vs list, price-rating notes, suggested changes (checkbox labels, `;`-separated), other changes (free text).
 

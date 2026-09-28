@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
@@ -186,6 +186,21 @@
           </label>
         </div>
 
+        <label class="choice interest-toggle keep-toggle">
+          <input type="checkbox" id="keepPosted" name="keepPosted" value="Yes" checked>
+          <span>Keep me posted on new units, pricing updates and survey results</span>
+        </label>
+
+        <div class="interest-panel keep-panel" id="keep-panel">
+          <div class="field" id="keep-email-field">
+            <label for="keepEmail">Enter your email so we can keep you posted <span class="req">*</span></label>
+            <input type="email" id="keepEmail" name="keepEmail" autocomplete="email" placeholder="you@example.org">
+            <p class="keep-hint">You can unsubscribe any time. Don't want updates? Just uncheck the box above.</p>
+            <p class="error" id="err-keepEmail" hidden>Please enter a valid email address, or uncheck "Keep me posted".</p>
+          </div>
+          <p class="keep-hint" id="keep-note" hidden>We'll send updates to the email you entered above.</p>
+        </div>
+
         <div class="field">
           <label for="comments">Anything else you'd like us to know? <span class="opt">(optional)</span></label>
           <textarea id="comments" name="comments" rows="3"></textarea>
@@ -230,11 +245,11 @@
   </div>
 
   <footer class="site-footer">
-    <div class="wrap"><p>Responses are used only for product planning. Contact info is optional and used only if you ask for a follow-up.</p></div>
+    <div class="wrap"><p>Responses are used only for product planning. Contact info is optional and used only for the follow-up or updates you ask for.</p></div>
   </footer>
 
-  <script src="config.js?v=11"></script>
-  <script src="results.js?v=11"></script>
-  <script src="survey.js?v=11"></script>
+  <script src="config.js?v=12"></script>
+  <script src="results.js?v=12"></script>
+  <script src="survey.js?v=12"></script>
 </body>
 </html>

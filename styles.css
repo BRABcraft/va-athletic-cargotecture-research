@@ -251,6 +251,11 @@ textarea { resize: vertical; }
 .interest-panel { padding: 16px 18px 2px; margin-bottom: 18px; border: 1px dashed var(--border); border-radius: var(--radius); background: var(--surface-2); }
 .interest-panel[hidden] { display: none; }
 .interest-panel input, .interest-panel select { background: #fff; }
+.keep-toggle { margin-top: 18px; }
+.keep-panel { padding-bottom: 14px; }
+.keep-panel .field { margin-bottom: 0; }
+.keep-hint { margin: 8px 0 0; color: var(--muted); font-size: .9em; }
+.keep-panel > .keep-hint { margin-top: 0; }
 
 /* Review */
 .review-section { border-top: 1px solid var(--border); padding: 16px 0; }
